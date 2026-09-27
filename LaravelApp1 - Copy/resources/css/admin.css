@@ -1,0 +1,59 @@
+/* =========================================================
+   ADMIN / STAFF — sidebar, topbar, stat cards, admin content.
+   ========================================================= */
+
+.admin-layout{display:flex;min-height:100vh}
+
+.sidebar{
+  width:250px;background:#2b1d14;color:#e8ddd2;flex-shrink:0;
+  display:flex;flex-direction:column;transition:.25s;
+  position:fixed;top:0;bottom:0;left:0;z-index:60;
+}
+.sidebar-brand{
+  padding:22px 20px;font-weight:800;font-size:1.15rem;color:#fff;
+  border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:center;
+}
+.sidebar-brand::before{content:"☕";font-size:1.3rem}
+.sidebar-nav{padding:14px 10px;flex:1;overflow-y:auto}
+.sidebar-nav a{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;
+  color:#c9b8a8;font-size:.9rem;font-weight:500;margin-bottom:2px;transition:.2s;
+}
+.sidebar-nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+.sidebar-nav a.active{background:var(--brand-2);color:#fff}
+.sidebar-nav .nav-section{
+  font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;
+  color:#8a7565;padding:16px 14px 6px;font-weight:700;
+}
+
+.admin-main{flex:1;margin-left:250px;display:flex;flex-direction:column;min-width:0}
+
+.topbar{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:14px 24px;display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;z-index:40;
+}
+.topbar h1{font-size:1.15rem;font-weight:700}
+.topbar-actions{display:flex;gap:14px;align-items:center}
+
+.admin-content{padding:24px;flex:1}
+
+/* Stat cards */
+.stat-card{
+  background:#fff;border-radius:var(--radius);padding:20px;border:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;
+}
+.stat-card .label{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+.stat-card .value{font-size:1.8rem;font-weight:800;color:var(--brand);margin-top:6px}
+.stat-icon{
+  width:46px;height:46px;border-radius:12px;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+}
+
+/* Responsive */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .admin-main{margin-left:0}
+  .mobile-toggle{display:inline-flex}
+}

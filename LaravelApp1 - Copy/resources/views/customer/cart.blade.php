@@ -22,11 +22,11 @@
                 <div class="text-sm text-muted">{{ $item->special_instructions }}</div>
                 <div class="text-sm" style="color:var(--brand);font-weight:700">₱{{ number_format($item->product->price,2) }}</div>
               </div>
-              <form method="POST" action="{{ route('customer.cart.update', $item->id) }}">
+              <form method="POST" action="{{ route('customer.cart.update', $item->id) }}" data-cart-update>
                 @csrf @method('PUT')
                 <div class="qty">
                   <button type="button" data-dec>−</button>
-                  <input type="number" name="quantity" value="{{ $item->quantity }}" min="1" onchange="this.form.submit()">
+                  <input type="number" name="quantity" value="{{ $item->quantity }}" min="1">
                   <button type="button" data-inc>+</button>
                 </div>
               </form>
