@@ -1,0 +1,307 @@
+/* Customer Layout */
+.customer-layout {
+    min-height: 100vh;
+    background: var(--warm-cream);
+}
+
+.customer-navbar {
+    background: var(--coffee-brown);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-md);
+}
+
+.customer-nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 68px;
+}
+
+.customer-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--pure-white);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.customer-brand svg {
+    width: 26px;
+    height: 26px;
+}
+
+.customer-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cnav-link {
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+}
+
+.cnav-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--pure-white);
+}
+
+.cnav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--pure-white);
+}
+
+.cnav-logout {
+    background: rgba(229, 57, 53, 0.8);
+    color: var(--pure-white);
+    margin-left: 8px;
+}
+
+.cnav-logout:hover {
+    background: var(--danger);
+}
+
+.mobile-nav-toggle {
+    display: none;
+    background: none;
+    color: var(--pure-white);
+    padding: 8px;
+}
+
+.mobile-nav-toggle svg {
+    width: 24px;
+    height: 24px;
+}
+
+.customer-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+/* Order Type Selection */
+.order-type-section {
+    margin-bottom: 32px;
+}
+
+.order-type-title {
+    font-size: 26px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--deep-espresso);
+    margin-bottom: 24px;
+}
+
+.order-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.order-type-card {
+    background: var(--pure-white);
+    border: 2px solid var(--medium-gray);
+    border-radius: var(--radius-lg);
+    padding: 28px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.order-type-card:hover {
+    border-color: var(--caramel-accent);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.order-type-card.selected {
+    border-color: var(--coffee-brown);
+    background: var(--warm-cream);
+    box-shadow: 0 8px 24px rgba(111, 78, 55, 0.15);
+}
+
+.order-type-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+}
+
+.order-type-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--deep-espresso);
+    margin-bottom: 4px;
+}
+
+.order-type-desc {
+    font-size: 13px;
+    color: var(--dark-gray);
+}
+
+/* Order Form Section */
+.order-form-section {
+    background: var(--pure-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 28px;
+    margin-bottom: 24px;
+}
+
+.order-form-section h3 {
+    font-size: 20px;
+    margin-bottom: 6px;
+}
+
+.order-form-section .subtitle {
+    font-size: 14px;
+    color: var(--dark-gray);
+    margin-bottom: 20px;
+}
+
+.order-form-section textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Menu Grid */
+.menu-section-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--deep-espresso);
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.menu-card {
+    background: var(--pure-white);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.menu-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--caramel-accent);
+}
+
+.menu-card.selected {
+    border-color: var(--coffee-brown);
+    background: var(--warm-cream);
+}
+
+.menu-card-image {
+    width: 100%;
+    height: 120px;
+    background: var(--warm-cream);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.menu-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--deep-espresso);
+    margin-bottom: 4px;
+}
+
+.menu-card-desc {
+    font-size: 12px;
+    color: var(--dark-gray);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.menu-card-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--coffee-brown);
+}
+
+/* Pickup Details */
+.pickup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Customer Orders Page */
+.customer-order-card {
+    background: var(--pure-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 20px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--medium-gray);
+    transition: var(--transition);
+}
+
+.customer-order-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.customer-order-card.pending { border-left-color: var(--warning); }
+.customer-order-card.confirmed { border-left-color: var(--info); }
+.customer-order-card.preparing { border-left-color: var(--caramel-accent); }
+.customer-order-card.ready { border-left-color: var(--matcha-green); }
+.customer-order-card.completed { border-left-color: var(--dark-gray); }
+.customer-order-card.canceled { border-left-color: var(--danger); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .customer-nav {
+        display: none;
+        position: absolute;
+        top: 68px;
+        left: 0;
+        right: 0;
+        background: var(--coffee-brown);
+        flex-direction: column;
+        padding: 12px;
+        gap: 4px;
+        box-shadow: var(--shadow-md);
+    }
+    .customer-nav.open {
+        display: flex;
+    }
+    .cnav-link {
+        width: 100%;
+        text-align: center;
+    }
+    .mobile-nav-toggle {
+        display: block;
+    }
+    .order-type-grid {
+        grid-template-columns: 1fr;
+    }
+    .pickup-grid {
+        grid-template-columns: 1fr;
+    }
+    .customer-main {
+        padding: 20px 16px;
+    }
+    .order-type-title {
+        font-size: 22px;
+    }
+}

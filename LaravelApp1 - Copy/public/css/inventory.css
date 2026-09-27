@@ -1,0 +1,108 @@
+.inventory-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    max-width: 360px;
+}
+
+.search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--dark-gray);
+    pointer-events: none;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 16px 10px 42px;
+    font-size: 14px;
+    border: 1.5px solid var(--medium-gray);
+    border-radius: var(--radius-md);
+    background: var(--pure-white);
+    transition: var(--transition);
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--coffee-brown);
+    box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+}
+
+.filter-group {
+    display: flex;
+    gap: 8px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 20px;
+    background: var(--pure-white);
+    color: var(--dark-gray);
+    border: 1.5px solid var(--medium-gray);
+    transition: var(--transition);
+}
+
+.filter-btn:hover {
+    border-color: var(--coffee-brown);
+    color: var(--coffee-brown);
+}
+
+.filter-btn.active {
+    background: var(--coffee-brown);
+    color: var(--pure-white);
+    border-color: var(--coffee-brown);
+}
+
+.stock-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.stock-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.stock-dot.in-stock { background: var(--matcha-green); }
+.stock-dot.low-stock { background: var(--warning); }
+.stock-dot.out-of-stock { background: var(--danger); }
+
+/* Inventory Form */
+.inventory-form {
+    max-width: 640px;
+}
+
+.inventory-form .form-row {
+    grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 640px) {
+    .inventory-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-box {
+        max-width: none;
+    }
+    .inventory-form .form-row {
+        grid-template-columns: 1fr;
+    }
+}
