@@ -1,73 +1,46 @@
-@extends('layouts.app')
+@extends('layouts.issang')
 
+@section('title', ($portal === 'admin' ? 'Admin Login' : 'Customer Login').' | Issang Macchiatos')
+@section('hideChrome', 'true')
+@section('frameClass', 'auth-frame')
+@section('mainClass', 'auth-content')
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Login') }}</div>
+    <section class="auth-card">
+        <a class="auth-brand" href="{{ route('home') }}" aria-label="Issang Macchiatos home"><span class="brand-mark" aria-hidden="true">IM</span><span>Issang Macchiatos</span></a>
+        <p class="auth-portal-label">USER LOGIN <span>|</span> CUSTOMER LOGIN</p>
+        <div class="auth-panel">
+            <p class="eyebrow">{{ $portal === 'admin' ? 'ADMIN ACCESS' : 'CUSTOMER ACCESS' }}</p>
+            <h1>{{ $portal === 'admin' ? 'ADMIN LOGIN' : 'USER LOGIN' }}</h1>
+            <p class="auth-description">{{ $portal === 'admin' ? 'Sign in to manage orders, sales, inventory and reports.' : 'Sign in to order your favorites and follow their pickup status.' }}</p>
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('login') }}">
-                        @csrf
+            @if ($errors->any())
+                <div class="form-errors" role="alert">{{ $errors->first() }}</div>
+            @endif
 
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="current-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-md-6 offset-md-4">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                                    <label class="form-check-label" for="remember">
-                                        {{ __('Remember Me') }}
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-8 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Login') }}
-                                </button>
-
-                                @if (Route::has('password.request'))
-                                    <a class="btn btn-link" href="{{ route('password.request') }}">
-                                        {{ __('Forgot Your Password?') }}
-                                    </a>
-                                @endif
-                            </div>
-                        </div>
-                    </form>
+            <form class="stack-form" method="POST" action="{{ route('login') }}">
+                @csrf
+                <input type="hidden" name="portal" value="{{ $portal }}">
+                <label class="form-field">
+                    <span>EMAIL</span>
+                    <input type="email" name="email" value="{{ old('email') }}" placeholder="Enter email address" autocomplete="email" required autofocus>
+                </label>
+                <label class="form-field">
+                    <span>PASSWORD</span>
+                    <input type="password" name="password" placeholder="Enter password" autocomplete="current-password" required>
+                </label>
+                <div class="form-options">
+                    <label class="check-field"><input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}> <span>Remember me</span></label>
+                    <a href="{{ route('password.request') }}">Forgot password?</a>
                 </div>
-            </div>
+                <button class="primary-button auth-submit" type="submit">LOGIN</button>
+            </form>
+
+            @if ($portal === 'admin')
+                <p class="auth-switch"><a href="{{ route('login') }}?portal=user">USER LOGIN</a> <span>|</span> <a href="{{ route('login') }}?portal=user">CUSTOMER LOGIN</a></p>
+            @else
+                <p class="auth-switch">No account yet? <a href="{{ route('register') }}">REGISTER</a></p>
+                <p class="auth-switch"><a href="{{ route('login') }}?portal=admin">ADMIN LOGIN</a></p>
+            @endif
         </div>
-    </div>
-</div>
+    </section>
 @endsection
