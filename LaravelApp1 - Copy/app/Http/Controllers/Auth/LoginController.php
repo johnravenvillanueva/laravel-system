@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
-use Illuminate\Http\Request;
 
 class LoginController extends Controller
 {
@@ -21,29 +19,6 @@ class LoginController extends Controller
     */
 
     use AuthenticatesUsers;
-
-    public function showLoginForm(Request $request)
-    {
-        return view('auth.login', [
-            'portal' => $request->query('portal') === 'admin' ? 'admin' : 'user',
-        ]);
-    }
-
-    protected function attemptLogin(Request $request)
-    {
-        $user = User::where($this->username(), $request->input($this->username()))->first();
-        $isAdmin = $user && str_contains(strtolower($user->role), 'admin');
-        $adminPortal = $request->input('portal') === 'admin';
-
-        if (! $user || $isAdmin !== $adminPortal) {
-            return false;
-        }
-
-        return $this->guard()->attempt(
-            $request->only($this->username(), 'password'),
-            $request->boolean('remember')
-        );
-    }
 
     /**
      * Where to redirect users after login.
