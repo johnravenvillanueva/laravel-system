@@ -21,21 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'role',
-        'phone',
-        'address',
         'password',
     ];
-
-    public function subjects()
-    {
-        return $this->belongsToMany(Subjects::class, 'user_subjects')
-            ->withTimestamps();
-    }
-
-    public function orders()
-    {
-        return $this->hasMany(Order::class);
-    }
 
     /**
      * The attributes that should be hidden for serialization.
