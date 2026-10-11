@@ -21,10 +21,17 @@
       <tbody>
         @forelse($products ?? [] as $p)
           <tr>
-            <td>
-              <div class="bold">{{ $p->name }}</div>
-              <div class="text-sm text-muted">{{ Str::limit($p->description,60) }}</div>
-            </td>
+            <td class="flex center gap-12">
+  @if(!empty($p->image))
+    <img src="{{ asset($p->image) }}" alt="" style="width:40px;height:40px;border-radius:8px;object-fit:cover">
+  @else
+    <div class="cart-thumb" style="width:40px;height:40px;font-size:1.2rem">☕</div>
+  @endif
+  <div>
+    <div class="bold">{{ $p->name }}</div>
+    <div class="text-sm text-muted">{{ Str::limit($p->description,60) }}</div>
+  </div>
+</td>
             <td>{{ $p->category->name ?? '—' }}</td>
             <td class="bold">₱{{ number_format($p->price,2) }}</td>
             <td>@if($p->is_available)<span class="badge badge-ok">Available</span>@else<span class="badge badge-cancelled">Unavailable</span>@endif</td>

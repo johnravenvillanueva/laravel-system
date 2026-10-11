@@ -13,7 +13,6 @@
   padding:22px 20px;font-weight:800;font-size:1.15rem;color:#fff;
   border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:8px;align-items:center;
 }
-.sidebar-brand::before{content:"☕";font-size:1.3rem}
 .sidebar-nav{padding:14px 10px;flex:1;overflow-y:auto}
 .sidebar-nav a{
   display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;

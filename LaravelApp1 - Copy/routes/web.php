@@ -1,417 +1,116 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Auth\GenericUser;
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\GuestOrderController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Customer\OrderController as CustomerOrderController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\InventoryController;
+use App\Http\Controllers\Admin\SalesController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\ProfileController;
+
+Route::get('/', [LandingController::class, 'index'])->name('home');
+Route::get('/menu', [MenuController::class, 'index'])->name('menu');
+Route::get('/product/{id}', [MenuController::class, 'show'])->name('customer.product.show');
 
 
-$fakeAuth = function (string $default = 'admin') {
-    if (!Auth::check()) {
-        $role = request()->query('as', $default);
-
-        $user = new class([
-            'id'         => 1,
-            'first_name' => ucfirst($role),
-            'last_name'  => 'Preview',
-            'email'      => "{$role}@issang.test",
-            'phone'      => '09123456789',
-            'address'    => '123 Sample Street, Sample City',
-            'avatar'     => null,
-            'role'       => $role,
-            'is_active'  => 1,
-            'last_login' => now(),
-            'created_at' => now(),
-            'updated_at' => now(),
-            'password'   => '',
-        ]) extends GenericUser {
-            public function __get($key)
-            {
-                return $this->attributes[$key] ?? null;
-            }
-        };
-
-        Auth::setUser($user);
-    }
-    return Auth::user();
-};
-
-/*
-|--------------------------------------------------------------------------
-| Public / Customer
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/', function () use ($fakeAuth) {
-    $fakeAuth('customer');
-    return view('customer.home', [
-        'featured' => [],
-        'pastries' => [],
-    ]);
-})->name('home');
-
-Route::get('/menu', function () use ($fakeAuth) {
-    $fakeAuth('customer');
-    return view('customer.menu', [
-        'products'   => [],
-        'categories' => [],
-    ]);
-})->name('menu');
-
-Route::get('/product/{id}', function ($id) use ($fakeAuth) {
-    $fakeAuth('customer');
-    return view('customer.product-show', [
-        'product' => (object)[
-            'id'          => $id,
-            'name'        => 'Sample Product',
-            'description' => 'Sample description',
-            'price'       => 0,
-            'category'    => (object)['name' => 'Coffee'],
-        ],
-    ]);
-})->name('customer.product.show');
-
-/*
-|--------------------------------------------------------------------------
-| Customer area
-|--------------------------------------------------------------------------
-*/
-
-Route::prefix('customer')->name('customer.')->group(function () use ($fakeAuth) {
-
-    Route::get('/cart', function () use ($fakeAuth) {
-        $fakeAuth('customer');
-        return view('customer.cart', [
-            'cart'     => (object)['items' => collect()],
-            'subtotal' => 0,
-        ]);
-    })->name('cart');
-
-    Route::post('/cart/add/{product}', fn() => back())->name('cart.add');
-    Route::put('/cart/update/{item}', fn() => back())->name('cart.update');
-    Route::delete('/cart/remove/{item}', fn() => back())->name('cart.remove');
-
-    Route::get('/checkout', function () use ($fakeAuth) {
-        $fakeAuth('customer');
-        return view('customer.checkout', [
-            'cart'     => (object)['items' => collect()],
-            'subtotal' => 0,
-        ]);
-    })->name('checkout');
-
-    Route::post('/checkout', fn() => redirect()->route('customer.orders'))
-        ->name('checkout.store');
-
-    Route::get('/orders', function () use ($fakeAuth) {
-        $fakeAuth('customer');
-        return view('customer.orders', ['orders' => collect()]);
-    })->name('orders');
-
-    Route::get('/orders/{id}', function ($id) use ($fakeAuth) {
-        $fakeAuth('customer');
-        return view('customer.order-show', [
-            'order' => (object)[
-                'id'             => $id,
-                'status'         => 'pending',
-                'total_amount'   => 0,
-                'pickup_date'    => now()->toDateString(),
-                'pickup_time'    => '10:00',
-                'payment_method' => 'cash',
-                'payment_status' => 'pending',
-                'notes'          => '',
-                'items'          => collect(),
-            ],
-        ]);
-    })->name('orders.show');
-
-    Route::get('/notifications', function () use ($fakeAuth) {
-        $fakeAuth('customer');
-        return view('customer.notifications', ['notifications' => collect()]);
-    })->name('notifications');
-
-    Route::post('/notifications/read-all', fn() => back())
-        ->name('notifications.read-all');
-
-    Route::get('/profile', function () use ($fakeAuth) {
-        $user = $fakeAuth('customer');
-        return view('customer.profile', ['user' => $user]);
-    })->name('profile');
-
-    Route::put('/profile', fn() => back())->name('profile.update');
-    Route::put('/profile/password', fn() => back())->name('profile.password');
+Route::prefix('guest')->name('customer.guest.')->group(function () {
+    Route::get('/checkout', [GuestOrderController::class, 'checkout'])->name('checkout');
+    Route::post('/checkout', [GuestOrderController::class, 'place'])->name('place');
+    Route::get('/confirm', [GuestOrderController::class, 'confirm'])->name('confirm');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Auth (preview only)
-|--------------------------------------------------------------------------
-*/
+Route::get('/login', [LoginController::class, 'show'])->name('login');
+Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/register', [RegisterController::class, 'show'])->name('register');
+Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');
+Route::post('/forgot-password', fn() => back()->with('info', 'Reset link sent (demo).'))->name('password.email');
 
-Route::get('/login', fn() => view('auth.login'))->name('login');
-Route::post('/login', fn() => redirect('/admin/dashboard'))->name('login.attempt');
+Route::prefix('customer')->name('customer.')->group(function () {
+    Route::get('/cart', [CustomerOrderController::class, 'cart'])->name('cart');
+    Route::get('/checkout', [CustomerOrderController::class, 'checkout'])->name('checkout');
+    Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders');
+    Route::get('/orders/{id}', [CustomerOrderController::class, 'show'])->name('orders.show');
+    Route::get('/notifications', [CustomerOrderController::class, 'notifications'])->name('notifications');
+    Route::get('/profile', [CustomerOrderController::class, 'profile'])->name('profile');
 
-Route::get('/register', fn() => view('auth.register'))->name('register');
-Route::post('/register', fn() => redirect('/'))->name('register.store');
+    // Cart mutations are demo no-ops for now
+    Route::post('/cart/add/{product}', fn() => back()->with('success', 'Added to cart.'))->name('cart.add');
+    Route::put('/cart/update/{item}', fn() => back())->name('cart.update');
+    Route::delete('/cart/remove/{item}', fn() => back())->name('cart.remove');
+    Route::post('/checkout', fn() => redirect()->route('customer.orders'))->name('checkout.store');
+    Route::post('/notifications/read-all', fn() => back())->name('notifications.read-all');
+    Route::put('/profile', fn() => back()->with('success', 'Profile updated.'))->name('profile.update');
+    Route::put('/profile/password', fn() => back()->with('success', 'Password changed.'))->name('profile.password');
+});
 
-Route::get('/forgot-password', fn() => view('auth.forgot-password'))->name('password.request');
-Route::post('/forgot-password', fn() => back())->name('password.email');
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::post('/logout', fn() => redirect('/'))->name('logout');
+    // Users — staff/admin only
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
-/*
-|--------------------------------------------------------------------------
-| Admin / Staff area
-|--------------------------------------------------------------------------
-*/
+    // Products
+    Route::resource('products', ProductController::class)->except(['show']);
 
-Route::prefix('admin')->name('admin.')->group(function () use ($fakeAuth) {
+    // Categories
+    Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
+    Route::get('/categories/create', [CategoryController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::get('/categories/{id}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
+    Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
-    Route::get('/dashboard', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.dashboard', [
-            'todaySales'    => 0,
-            'pendingOrders' => 0,
-            'productCount'  => 0,
-            'lowStockCount' => 0,
-            'recentOrders'  => collect(),
-            'lowStockItems' => collect(),
-        ]);
-    })->name('dashboard');
+    // Inventory
+    Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+    Route::get('/inventory/create', [InventoryController::class, 'create'])->name('inventory.create');
+    Route::post('/inventory', [InventoryController::class, 'store'])->name('inventory.store');
+    Route::get('/inventory/transactions', [InventoryController::class, 'transactions'])->name('inventory.transactions');
+    Route::get('/inventory/{id}/edit', [InventoryController::class, 'edit'])->name('inventory.edit');
+    Route::put('/inventory/{id}', [InventoryController::class, 'update'])->name('inventory.update');
+    Route::delete('/inventory/{id}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
 
-    /* ---------- Users ---------- */
-    Route::get('/users', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.users.index', ['users' => collect()]);
-    })->name('users.index');
+    // Sales
+    Route::get('/sales', [SalesController::class, 'index'])->name('sales.index');
+    Route::get('/sales/create', [SalesController::class, 'create'])->name('sales.create');
+    Route::post('/sales', [SalesController::class, 'store'])->name('sales.store');
+    Route::get('/sales/{id}', [SalesController::class, 'show'])->name('sales.show');
 
-    Route::get('/users/create', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.users.create');
-    })->name('users.create');
+    // Orders
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{id}', [AdminOrderController::class, 'show'])->name('orders.show');
+    Route::put('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.status');
 
-    Route::post('/users', fn() => back())->name('users.store');
+    // Announcements
+    Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+    Route::get('/announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
+    Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+    Route::get('/announcements/{id}/edit', [AnnouncementController::class, 'edit'])->name('announcements.edit');
+    Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])->name('announcements.update');
+    Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
 
-    Route::get('/users/{id}/edit', function ($id) use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.users.edit', [
-            'user' => (object)[
-                'id'         => $id,
-                'first_name' => '',
-                'last_name'  => '',
-                'email'      => '',
-                'phone'      => '',
-                'role'       => 'staff',
-                'is_active'  => 1,
-            ],
-        ]);
-    })->name('users.edit');
+    // Reports
+    Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+    Route::get('/reports/inventory', [ReportController::class, 'inventory'])->name('reports.inventory');
 
-    Route::put('/users/{id}', fn() => back())->name('users.update');
-    Route::delete('/users/{id}', fn() => back())->name('users.destroy');
-
-    /* ---------- Products ---------- */
-    Route::get('/products', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.products.index', [
-            'products'   => collect(),
-            'categories' => collect(),
-        ]);
-    })->name('products.index');
-
-    Route::get('/products/create', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.products.create', ['categories' => collect()]);
-    })->name('products.create');
-
-    Route::post('/products', fn() => back())->name('products.store');
-
-    Route::get('/products/{id}/edit', function ($id) use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.products.edit', [
-            'product' => (object)[
-                'id'           => $id,
-                'name'         => '',
-                'description'  => '',
-                'category_id'  => 1,
-                'price'        => 0,
-                'is_available' => 1,
-            ],
-            'categories' => collect(),
-        ]);
-    })->name('products.edit');
-
-    Route::put('/products/{id}', fn() => back())->name('products.update');
-    Route::delete('/products/{id}', fn() => back())->name('products.destroy');
-
-    /* ---------- Categories ---------- */
-    Route::get('/categories', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.categories.index', ['categories' => collect()]);
-    })->name('categories.index');
-
-    Route::get('/categories/create', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.categories.form');
-    })->name('categories.create');
-
-    Route::post('/categories', fn() => back())->name('categories.store');
-
-    Route::get('/categories/{id}/edit', function ($id) use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.categories.form', [
-            'category' => (object)[
-                'id'          => $id,
-                'name'        => '',
-                'description' => '',
-            ],
-        ]);
-    })->name('categories.edit');
-
-    Route::put('/categories/{id}', fn() => back())->name('categories.update');
-    Route::delete('/categories/{id}', fn() => back())->name('categories.destroy');
-
-    /* ---------- Inventory ---------- */
-    Route::get('/inventory', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.inventory.index', ['items' => collect()]);
-    })->name('inventory.index');
-
-    Route::get('/inventory/create', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.inventory.create');
-    })->name('inventory.create');
-
-    Route::post('/inventory', fn() => back())->name('inventory.store');
-
-    Route::get('/inventory/{id}/edit', function ($id) use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.inventory.create');
-    })->name('inventory.edit');
-
-    Route::put('/inventory/{id}', fn() => back())->name('inventory.update');
-    Route::delete('/inventory/{id}', fn() => back())->name('inventory.destroy');
-
-    Route::get('/inventory/transactions', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.inventory.transactions', ['transactions' => collect()]);
-    })->name('inventory.transactions');
-
-    /* ---------- Sales ---------- */
-    Route::get('/sales', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.sales.index', ['sales' => collect()]);
-    })->name('sales.index');
-
-    Route::get('/sales/create', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.sales.create', ['products' => collect()]);
-    })->name('sales.create');
-
-    Route::post('/sales', fn() => back())->name('sales.store');
-
-    Route::get('/sales/{id}', function ($id) use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.sales.show', [
-            'sale' => (object)[
-                'id'               => $id,
-                'total_amount'     => 0,
-                'payment_method'   => 'cash',
-                'transaction_type' => 'walk-in',
-                'created_at'       => now(),
-                'items'            => collect(),
-            ],
-        ]);
-    })->name('sales.show');
-
-    /* ---------- Orders ---------- */
-    Route::get('/orders', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.orders.index', ['orders' => collect()]);
-    })->name('orders.index');
-
-    Route::get('/orders/{id}', function ($id) use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.orders.show', [
-            'order' => (object)[
-                'id'             => $id,
-                'status'         => 'pending',
-                'total_amount'   => 0,
-                'pickup_date'    => now()->toDateString(),
-                'pickup_time'    => '10:00',
-                'payment_method' => 'cash',
-                'payment_status' => 'pending',
-                'notes'          => '',
-                'customer'       => (object)[
-                    'first_name' => '',
-                    'last_name'  => '',
-                    'email'      => '',
-                    'phone'      => '',
-                ],
-                'items' => collect(),
-            ],
-        ]);
-    })->name('orders.show');
-
-    Route::put('/orders/{id}/status', fn() => back())->name('orders.status');
-
-    /* ---------- Announcements ---------- */
-    Route::get('/announcements', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.announcements.index', ['announcements' => collect()]);
-    })->name('announcements.index');
-
-    Route::get('/announcements/create', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.announcements.form');
-    })->name('announcements.create');
-
-    Route::post('/announcements', fn() => back())->name('announcements.store');
-
-    Route::get('/announcements/{id}/edit', function ($id) use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.announcements.form', [
-            'announcement' => (object)[
-                'id'              => $id,
-                'title'           => '',
-                'content'         => '',
-                'target_audience' => 'all',
-                'is_active'       => 1,
-                'expires_at'      => null,
-            ],
-        ]);
-    })->name('announcements.edit');
-
-    Route::put('/announcements/{id}', fn() => back())->name('announcements.update');
-    Route::delete('/announcements/{id}', fn() => back())->name('announcements.destroy');
-
-    /* ---------- Reports ---------- */
-    Route::get('/reports/sales', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.reports.sales', [
-            'sales'       => collect(),
-            'total'       => 0,
-            'count'       => 0,
-            'avg'         => 0,
-            'chartLabels' => [],
-            'chartData'   => [],
-        ]);
-    })->name('reports.sales');
-
-    Route::get('/reports/inventory', function () use ($fakeAuth) {
-        $fakeAuth('admin');
-        return view('admin.reports.inventory', [
-            'items'      => collect(),
-            'totalItems' => 0,
-            'lowCount'   => 0,
-            'totalValue' => 0,
-        ]);
-    })->name('reports.inventory');
-
-    /* ---------- Profile ---------- */
-    Route::get('/profile', function () use ($fakeAuth) {
-        $user = $fakeAuth('admin');
-        return view('admin.profile', ['user' => $user]);
-    })->name('profile');
-
-    Route::put('/profile', fn() => back())->name('profile.update');
-    Route::put('/profile/password', fn() => back())->name('profile.password');
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'password'])->name('profile.password');
 });

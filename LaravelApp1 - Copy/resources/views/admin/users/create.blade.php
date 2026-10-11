@@ -17,7 +17,6 @@
           <select name="role" class="form-control" required>
             <option value="staff">Staff</option>
             <option value="admin">Admin</option>
-            <option value="customer">Customer</option>
           </select>
         </div>
         <div class="form-group"><label class="form-label">Password</label><input type="password" name="password" class="form-control" required></div>

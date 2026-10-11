@@ -1,6 +1,9 @@
 <nav class="navbar">
   <div class="navbar-inner">
-    <a href="{{ route('home') }}" class="logo">Issang Macchiatos</a>
+    <a href="{{ route('home') }}" class="logo">
+  <img src="{{ asset('images/isanglogoreal.jpg') }}" alt="Issang Macchiatos" style="height:36px;width:auto">
+  <span>Issang Macchiatos</span>
+</a>
 
     <button class="mobile-toggle" data-toggle-nav>☰</button>
 
@@ -30,6 +33,7 @@
           <a href="{{ route('admin.dashboard') }}" class="btn btn-primary btn-sm">Dashboard</a>
         @endif
       @else
+        <a href="{{ route('customer.guest.checkout') }}" class="btn btn-outline btn-sm">Order as Guest</a>
         <a href="{{ route('login') }}" class="btn btn-outline btn-sm">Login</a>
         <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Sign Up</a>
       @endauth

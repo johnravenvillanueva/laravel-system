@@ -1,5 +1,10 @@
 <aside class="sidebar">
-  <div class="sidebar-brand">Issang Macchiatos</div>
+  <div class="sidebar-brand">
+  <div class="sidebar-brand">
+  <img src="{{ asset('images/logo.png') }}" alt="Issang Macchiatos" style="height:28px;width:auto">
+  <span>Issang Macchiatos</span>
+</div>
+</div>
   <nav class="sidebar-nav">
     <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">📊 Dashboard</a>
 

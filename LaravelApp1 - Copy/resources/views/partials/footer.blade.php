@@ -16,7 +16,7 @@
     </div>
     <div>
       <h4>Contact</h4>
-      <a href="#">📍 Store Location</a>
+      <a href="#">📍 Pinaod, San Ildefonso Bulacan</a>
       <a href="#">📞 0912 345 6789</a>
     </div>
   </div>
