@@ -25,10 +25,6 @@ class Announcement extends Model
         'updated_at' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function author()
     {
         return $this->belongsTo(Admin::class, 'created_by', 'admin_id');
@@ -38,11 +34,6 @@ class Announcement extends Model
     {
         return $this->hasMany(Notification::class, 'announcement_id', 'announcement_id');
     }
-
-    /* -------------------------------------------------
-     |  Scopes
-     |-------------------------------------------------*/
-
     /**
      * Only currently visible announcements:
      * - is_active = true
@@ -51,10 +42,10 @@ class Announcement extends Model
     public function scopeVisible($query)
     {
         return $query->where('is_active', true)
-                     ->where(function ($q) {
-                         $q->whereNull('expires_at')
-                           ->orWhere('expires_at', '>', now());
-                     });
+                    ->where(function ($q) {
+                        $q->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                    });
     }
 
     public function scopeForCustomers($query)
@@ -67,10 +58,6 @@ class Announcement extends Model
         return $query->whereIn('target_audience', ['all', 'staff']);
     }
 
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
-
     public function isExpired(): bool
     {
         return $this->expires_at && $this->expires_at->isPast();
@@ -79,5 +66,9 @@ class Announcement extends Model
     public function isVisible(): bool
     {
         return $this->is_active && ! $this->isExpired();
+    }
+        public function getIdAttribute()
+    {
+        return $this->announcement_id;
     }
 }

@@ -25,10 +25,6 @@ class SaleItem extends Model
         'subtotal'   => 'decimal:2',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function sale()
     {
         return $this->belongsTo(Sale::class, 'sale_id', 'sale_id');
@@ -37,5 +33,9 @@ class SaleItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'product_id');
+    }
+        public function getIdAttribute()
+    {
+        return $this->sale_item_id;
     }
 }

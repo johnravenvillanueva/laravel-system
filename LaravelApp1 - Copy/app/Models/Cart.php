@@ -18,10 +18,6 @@ class Cart extends Model
         'updated_at' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
@@ -31,10 +27,6 @@ class Cart extends Model
     {
         return $this->hasMany(CartItem::class, 'cart_id', 'cart_id');
     }
-
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
 
     public function getSubtotalAttribute(): float
     {
@@ -51,5 +43,9 @@ class Cart extends Model
     public function isEmpty(): bool
     {
         return $this->items->isEmpty();
+    }
+        public function getIdAttribute()
+    {
+        return $this->cart_id;
     }
 }

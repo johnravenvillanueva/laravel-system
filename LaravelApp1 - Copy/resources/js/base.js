@@ -1,7 +1,3 @@
-/* =========================================================
-   BASE JS — shared behavior across all layouts
-   ========================================================= */
-
 document.addEventListener("DOMContentLoaded", () => {
     /* Mobile nav toggle (public navbar) */
     const navToggle = document.querySelector("[data-toggle-nav]");

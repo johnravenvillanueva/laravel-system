@@ -26,10 +26,6 @@ class Notification extends Model
         'updated_at' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
@@ -50,10 +46,6 @@ class Notification extends Model
         return $this->belongsTo(Announcement::class, 'announcement_id', 'announcement_id');
     }
 
-    /* -------------------------------------------------
-     |  Scopes
-     |-------------------------------------------------*/
-
     public function scopeUnread($query)
     {
         return $query->where('is_read', false);
@@ -68,10 +60,6 @@ class Notification extends Model
     {
         return $query->where('admin_id', $adminId);
     }
-
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
 
     public function markAsRead(): bool
     {
@@ -89,5 +77,9 @@ class Notification extends Model
     public function isForAdmin(): bool
     {
         return ! is_null($this->admin_id);
+    }
+        public function getIdAttribute()
+    {
+        return $this->notification_id;
     }
 }   

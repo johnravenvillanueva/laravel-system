@@ -1,9 +1,6 @@
 <aside class="sidebar">
   <div class="sidebar-brand">
-  <div class="sidebar-brand">
-  <img src="{{ asset('images/logo.png') }}" alt="Issang Macchiatos" style="height:28px;width:auto">
-  <span>Issang Macchiatos</span>
-</div>
+  <img src="{{ asset('images/isanglogoreal.jpg') }}" alt="Logo" style="height:32px;width:auto;margin-right:8px;">
 </div>
   <nav class="sidebar-nav">
     <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">📊 Dashboard</a>
@@ -28,16 +25,16 @@
     <a href="{{ route('admin.reports.sales') }}" class="{{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">📈 Sales Report</a>
     <a href="{{ route('admin.reports.inventory') }}" class="{{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }}">📉 Inventory Report</a>
 
-    @if(auth()->user()?->role === 'admin')
+    @if(auth('admin')->check() && auth('admin')->user()->role === 'admin')
       <div class="nav-section">Admin</div>
-      <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">👥 Users</a>
+      <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">👥 Staff & Users</a>
     @endif
 
     <div class="nav-section">Account</div>
     <a href="{{ route('admin.profile') }}" class="{{ request()->routeIs('admin.profile') ? 'active' : '' }}">👤 Profile</a>
     <form action="{{ route('logout') }}" method="POST">
       @csrf
-      <button style="width:100%;text-align:left;display:flex;gap:12px;padding:11px 14px;color:#c9b8a8;font-size:.9rem">🚪 Logout</button>
+      <button style="width:100%;text-align:left;display:flex;gap:12px;padding:11px 14px;color:#c9b8a8;font-size:.9rem;background:none;border:none;cursor:pointer">🚪 Logout</button>
     </form>
   </nav>
 </aside>

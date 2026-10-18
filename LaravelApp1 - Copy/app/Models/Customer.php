@@ -37,10 +37,6 @@ class Customer extends Authenticatable
         'updated_at' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function cart()
     {
         return $this->hasOne(Cart::class, 'customer_id', 'customer_id');
@@ -61,9 +57,6 @@ class Customer extends Authenticatable
         return $this->hasMany(Notification::class, 'customer_id', 'customer_id');
     }
 
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
 
     public function isGuest(): bool
     {
@@ -78,5 +71,9 @@ class Customer extends Authenticatable
     public function fullName(): string
     {
         return trim("{$this->first_name} {$this->last_name}");
+    }
+        public function getIdAttribute()
+    {
+        return $this->customer_id;
     }
 }

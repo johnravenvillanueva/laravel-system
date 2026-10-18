@@ -30,8 +30,7 @@
           <tbody>
             @forelse($recentOrders ?? [] as $o)
               <tr>
-                <td><a href="{{ route('admin.orders.show',$o->id) }}" style="color:var(--brand);font-weight:700">#{{ str_pad($o->id,5,'0',STR_PAD_LEFT) }}</a></td>
-                <td>{{ $o->customer->first_name ?? 'Guest' }}</td>
+               <td><a href="{{ route('admin.orders.show', $o->order_id) }}" style="color:var(--brand);font-weight:700">#{{ str_pad($o->order_id, 5, '0', STR_PAD_LEFT) }}</a></td>
                 <td class="bold">₱{{ number_format($o->total_amount,2) }}</td>
                 <td><span class="badge badge-{{ $o->status }}">{{ ucfirst($o->status) }}</span></td>
                 <td class="text-sm text-muted">{{ $o->created_at->format('M d, h:i A') }}</td>

@@ -3,8 +3,13 @@
 @section('content')
   <div class="row" style="gap:32px;align-items:flex-start">
     <div class="card" style="flex:1;min-width:280px;overflow:hidden">
-      <div class="product-img" style="aspect-ratio:1/1;font-size:5rem">☕</div>
-    </div>
+  @if($product->image_url)
+    <img src="{{ asset($product->image_url) }}" alt="{{ $product->name }}"
+         style="aspect-ratio:1/1;width:100%;object-fit:cover;display:block">
+  @else
+    <div class="product-img" style="aspect-ratio:1/1;font-size:5rem">☕</div>
+  @endif
+</div>
     <div style="flex:1;min-width:280px">
       <span class="badge badge-confirmed">{{ $product->category->name ?? 'Coffee' }}</span>
       <h2 class="text-2xl bold mt-16">{{ $product->name }}</h2>

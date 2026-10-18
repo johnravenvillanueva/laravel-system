@@ -1,8 +1,3 @@
-/* =========================================================
-   CUSTOMER JS — cart item qty stepper behavior
-   (base.js handles the buttons; this submits the form on change)
-   ========================================================= */
-
 document.addEventListener("DOMContentLoaded", () => {
     // Auto-submit cart update form when the qty input changes
     document

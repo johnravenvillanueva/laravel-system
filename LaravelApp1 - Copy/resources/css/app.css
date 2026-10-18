@@ -1,6 +1,3 @@
-/* Entry point — import everything in order.
-   Later imports can override earlier ones. */
-
 @import './base.css';
 @import './public.css';
 @import './auth.css';

@@ -29,10 +29,6 @@ class AuditLog extends Model
         'timestamp' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function admin()
     {
         return $this->belongsTo(Admin::class, 'admin_id', 'admin_id');
@@ -47,10 +43,6 @@ class AuditLog extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
     }
-
-    /* -------------------------------------------------
-     |  Scopes
-     |-------------------------------------------------*/
 
     public function scopeForRecord($query, string $table, int $id)
     {
@@ -88,5 +80,9 @@ class AuditLog extends Model
     public function decodedNew(): array
     {
         return $this->new_value ? (json_decode($this->new_value, true) ?: []) : [];
+    }
+        public function getIdAttribute()
+    {
+        return $this->log_id;
     }
 }

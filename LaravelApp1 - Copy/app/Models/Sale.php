@@ -26,9 +26,6 @@ class Sale extends Model
         'updated_at'   => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
 
     public function staff()
     {
@@ -50,9 +47,6 @@ class Sale extends Model
         return $this->hasMany(SaleItem::class, 'sale_id', 'sale_id');
     }
 
-    /* -------------------------------------------------
-     |  Scopes
-     |-------------------------------------------------*/
 
     public function scopeWalkIn($query)
     {
@@ -69,9 +63,7 @@ class Sale extends Model
         return $query->whereBetween('sale_date', [$from, $to]);
     }
 
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
+
 
     public function isWalkIn(): bool
     {
@@ -91,5 +83,9 @@ class Sale extends Model
     public function isGCash(): bool
     {
         return $this->payment_method === 'gcash';
+    }
+        public function getIdAttribute()
+    {
+        return $this->sale_id;
     }
 }

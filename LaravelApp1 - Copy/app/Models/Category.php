@@ -19,12 +19,12 @@ class Category extends Model
         'updated_at' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function products()
     {
         return $this->hasMany(Product::class, 'category_id', 'category_id');
+    }
+        public function getIdAttribute()
+    {
+        return $this->category_id;
     }
 }

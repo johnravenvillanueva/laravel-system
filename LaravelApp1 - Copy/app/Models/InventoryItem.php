@@ -24,18 +24,10 @@ class InventoryItem extends Model
         'updated_at'    => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function transactions()
     {
         return $this->hasMany(InventoryTransaction::class, 'inventory_id', 'inventory_id');
     }
-
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
 
     public function isLowStock(): bool
     {
@@ -50,5 +42,9 @@ class InventoryItem extends Model
     public function formattedQuantity(): string
     {
         return number_format((float) $this->quantity, 2) . ' ' . $this->unit;
+    }
+        public function getIdAttribute()
+    {
+        return $this->cart_id;
     }
 }

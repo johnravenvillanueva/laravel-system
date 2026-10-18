@@ -18,44 +18,62 @@ use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ProfileController;
 
+/* -------------------------------------------------
+ |  PUBLIC / LANDING
+ |-------------------------------------------------*/
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::get('/product/{id}', [MenuController::class, 'show'])->name('customer.product.show');
 
-
+/* -------------------------------------------------
+ |  GUEST ORDER (no auth required)
+ |-------------------------------------------------*/
 Route::prefix('guest')->name('customer.guest.')->group(function () {
     Route::get('/checkout', [GuestOrderController::class, 'checkout'])->name('checkout');
     Route::post('/checkout', [GuestOrderController::class, 'place'])->name('place');
     Route::get('/confirm', [GuestOrderController::class, 'confirm'])->name('confirm');
+    Route::post('/cart/add/{product}', [GuestOrderController::class, 'addToCart'])->name('cart.add');
+    Route::delete('/cart/remove/{product}', [GuestOrderController::class, 'removeFromCart'])->name('cart.remove');
 });
 
-Route::get('/login', [LoginController::class, 'show'])->name('login');
-Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+/* -------------------------------------------------
+ |  AUTH
+ |-------------------------------------------------*/
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'show'])->name('login');
+    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+    Route::get('/register', [RegisterController::class, 'show'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+});
+
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-Route::get('/register', [RegisterController::class, 'show'])->name('register');
-Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+
 Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');
 Route::post('/forgot-password', fn() => back()->with('info', 'Reset link sent (demo).'))->name('password.email');
 
-Route::prefix('customer')->name('customer.')->group(function () {
+/* -------------------------------------------------
+ |  CUSTOMER (must be logged in as customer)
+ |-------------------------------------------------*/
+Route::middleware('customer.only')->prefix('customer')->name('customer.')->group(function () {
     Route::get('/cart', [CustomerOrderController::class, 'cart'])->name('cart');
+    Route::post('/cart/add/{product}', [CustomerOrderController::class, 'addToCart'])->name('cart.add');
+    Route::put('/cart/update/{product}', [CustomerOrderController::class, 'updateCart'])->name('cart.update');
+    Route::delete('/cart/remove/{product}', [CustomerOrderController::class, 'removeFromCart'])->name('cart.remove');
     Route::get('/checkout', [CustomerOrderController::class, 'checkout'])->name('checkout');
+    Route::post('/checkout', [CustomerOrderController::class, 'placeOrder'])->name('checkout.store');
     Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders');
     Route::get('/orders/{id}', [CustomerOrderController::class, 'show'])->name('orders.show');
     Route::get('/notifications', [CustomerOrderController::class, 'notifications'])->name('notifications');
+    Route::post('/notifications/read-all', [CustomerOrderController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
     Route::get('/profile', [CustomerOrderController::class, 'profile'])->name('profile');
-
-    // Cart mutations are demo no-ops for now
-    Route::post('/cart/add/{product}', fn() => back()->with('success', 'Added to cart.'))->name('cart.add');
-    Route::put('/cart/update/{item}', fn() => back())->name('cart.update');
-    Route::delete('/cart/remove/{item}', fn() => back())->name('cart.remove');
-    Route::post('/checkout', fn() => redirect()->route('customer.orders'))->name('checkout.store');
-    Route::post('/notifications/read-all', fn() => back())->name('notifications.read-all');
-    Route::put('/profile', fn() => back()->with('success', 'Profile updated.'))->name('profile.update');
-    Route::put('/profile/password', fn() => back()->with('success', 'Password changed.'))->name('profile.password');
+    Route::put('/profile', [CustomerOrderController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/profile/password', [CustomerOrderController::class, 'changePassword'])->name('profile.password');
 });
 
-Route::prefix('admin')->name('admin.')->group(function () {
+/* -------------------------------------------------
+ |  ADMIN / STAFF (must be logged in as admin)
+ |-------------------------------------------------*/
+Route::middleware('admin.only')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Users — staff/admin only
@@ -67,7 +85,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // Products
-    Route::resource('products', ProductController::class)->except(['show']);
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+    Route::get('/products/{id}/edit', [ProductController::class, 'edit'])->name('products.edit');
+    Route::put('/products/{id}', [ProductController::class, 'update'])->name('products.update');
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])->name('products.destroy');
 
     // Categories
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');

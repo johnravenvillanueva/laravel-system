@@ -16,7 +16,11 @@
         <div class="card-body">
           @foreach($cart->items as $item)
             <div class="cart-item">
-              <div class="cart-thumb">☕</div>
+              @if(!empty($item->image_url))
+  <img src="{{ asset($item->image_url) }}" alt="{{ $item->product->name }}" style="width:70px;height:70px;border-radius:10px;object-fit:cover;flex-shrink:0;">
+@else
+  <div class="cart-thumb">☕</div>
+@endif
               <div style="flex:1">
                 <div class="bold">{{ $item->product->name }}</div>
                 <div class="text-sm text-muted">{{ $item->special_instructions }}</div>
