@@ -36,10 +36,6 @@ class Admin extends Authenticatable
         'updated_at' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function creator()
     {
         return $this->belongsTo(Admin::class, 'created_by', 'admin_id');
@@ -70,10 +66,6 @@ class Admin extends Authenticatable
         return $this->hasMany(InventoryTransaction::class, 'performed_by', 'admin_id');
     }
 
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
-
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -87,5 +79,9 @@ class Admin extends Authenticatable
     public function fullName(): string
     {
         return trim("{$this->first_name} {$this->last_name}");
+    }
+        public function getIdAttribute()
+    {
+        return $this->admin_id;
     }
 }

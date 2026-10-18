@@ -11,14 +11,13 @@
           <div class="search-box mb-16"><input type="text" id="productSearch" class="form-control" placeholder="Search product…"></div>
           <div class="grid grid-3" id="productGrid">
             @foreach($products ?? [] as $p)
-              <div class="card product-card" data-name="{{ strtolower($p->name) }}" style="cursor:pointer"
-                  onclick="addToSale({{ $p->id }}, '{{ addslashes($p->name) }}', {{ $p->price }})">
-                @if(!empty($p->image))
-  <img src="{{ asset($p->image) }}" alt="" style="aspect-ratio:1/1;width:100%;object-fit:cover">
-@else
-  <div class="product-img" style="aspect-ratio:1/1">☕</div>
-@endif
-                <div class="product-body">
+              <div class="card product-card" data-name="{{ strtolower($p->name) }}" style="cursor:pointer" onclick="addToSale({{ $p->product_id }}, '{{ addslashes($p->name) }}', {{ $p->price }})">
+  @if($p->image_url)
+    <img src="{{ asset($p->image_url) }}" style="aspect-ratio:1/1;width:100%;object-fit:cover;display:block">
+  @else
+    <div class="product-img" style="aspect-ratio:1/1">☕</div>
+  @endif
+  <div class="product-body">
                   <div class="bold">{{ $p->name }}</div>
                   <div class="product-price">₱{{ number_format($p->price,2) }}</div>
                 </div>

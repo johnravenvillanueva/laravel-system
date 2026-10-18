@@ -1,8 +1,3 @@
-/* =========================================================
-   ADMIN JS — walk-in sale cart builder
-   Only loaded on /admin/sales/create
-   ========================================================= */
-
 (function () {
     const grid = document.getElementById("productGrid");
     const wrap = document.getElementById("saleItems");

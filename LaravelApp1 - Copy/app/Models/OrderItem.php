@@ -26,9 +26,6 @@ class OrderItem extends Model
         'subtotal'   => 'decimal:2',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
 
     public function order()
     {
@@ -38,5 +35,9 @@ class OrderItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'product_id');
+    }
+        public function getIdAttribute()
+    {
+        return $this->order_item_id;
     }
 }

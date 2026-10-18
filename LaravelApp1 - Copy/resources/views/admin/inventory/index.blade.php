@@ -23,8 +23,8 @@
             <td>{{ $i->min_threshold }}</td>
             <td>@if($i->quantity <= $i->min_threshold)<span class="badge badge-low">Low</span>@else<span class="badge badge-ok">OK</span>@endif</td>
             <td class="flex gap-8">
-              <a href="{{ route('admin.inventory.edit',$i->id) }}" class="btn btn-outline btn-sm">Edit</a>
-              <form method="POST" action="{{ route('admin.inventory.destroy',$i->id) }}" data-confirm="Delete this item?">
+              <a href="{{ route('admin.inventory.edit', $i->inventory_id) }}" class="btn btn-outline btn-sm">Edit</a>
+<form method="POST" action="{{ route('admin.inventory.destroy', $i->inventory_id) }}" data-confirm="Delete this item?">
                 @csrf @method('DELETE')
                 <button class="btn btn-danger btn-sm">Delete</button>
               </form>

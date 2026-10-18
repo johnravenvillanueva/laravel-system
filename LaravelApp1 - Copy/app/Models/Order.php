@@ -34,10 +34,6 @@ class Order extends Model
         'updated_at'     => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
@@ -58,10 +54,6 @@ class Order extends Model
         return $this->hasMany(Notification::class, 'order_id', 'order_id');
     }
 
-    /* -------------------------------------------------
-     |  Scopes
-     |-------------------------------------------------*/
-
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -71,10 +63,6 @@ class Order extends Model
     {
         return $query->where('status', 'completed');
     }
-
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
 
     public function isGuest(): bool
     {
@@ -109,5 +97,12 @@ class Order extends Model
         } while (self::where('reference_code', $code)->exists());
 
         return $code;
+    }
+        /**
+     * Alias for `$order->id` → `order_id`.
+     */
+    public function getIdAttribute()
+    {
+        return $this->order_id;
     }
 }

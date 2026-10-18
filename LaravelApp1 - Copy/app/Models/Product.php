@@ -58,12 +58,15 @@ class Product extends Model
         return $query->where('is_available', true);
     }
 
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
-
     public function formattedPrice(): string
     {
         return '₱' . number_format((float) $this->price, 2);
+    }
+        /**
+     * Alias for `$product->id` → `product_id`.
+     */
+    public function getIdAttribute()
+    {
+        return $this->product_id;
     }
 }

@@ -2,32 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Support\DemoData;
+use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class MenuController extends Controller
 {
+    /**
+     * Menu list with optional search (q) and category filter.
+     */
     public function index(Request $request)
     {
-        $products = DemoData::products();
+        $query = Product::with('category')->available();
 
+        // Search by name
         if ($q = $request->query('q')) {
-            $products = $products->filter(fn($p) => str_contains(strtolower($p->name), strtolower($q)));
-        }
-        if ($cat = $request->query('category')) {
-            $products = $products->where('category_id', (int) $cat);
+            $query->where('name', 'like', '%' . $q . '%');
         }
 
-        return view('customer.menu', [
-            'products' => $products->values(),
-            'categories' => DemoData::categories(),
-        ]);
+        // Filter by category id
+        if ($categoryId = $request->query('category')) {
+            $query->where('category_id', $categoryId);
+        }
+
+        $products = $query->latest()->get();
+        $categories = Category::all();
+
+        return view('customer.menu', compact('products', 'categories'));
     }
 
+    /**
+     * Single product detail.
+     */
     public function show(int $id)
     {
-        $product = DemoData::products()->firstWhere('id', $id) ?? DemoData::products()->first();
+        $product = Product::with('category')->findOrFail($id);
 
-        return view('customer.product-show', ['product' => $product]);
+        // Related products from same category (excluding current)
+        $related = Product::with('category')
+            ->available()
+            ->where('category_id', $product->category_id)
+            ->where('product_id', '!=', $product->product_id)
+            ->take(4)
+            ->get();
+
+        return view('customer.product-show', compact('product', 'related'));
     }
 }

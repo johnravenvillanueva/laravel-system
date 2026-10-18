@@ -23,10 +23,6 @@ class CartItem extends Model
         'added_at' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function cart()
     {
         return $this->belongsTo(Cart::class, 'cart_id', 'cart_id');
@@ -37,15 +33,15 @@ class CartItem extends Model
         return $this->belongsTo(Product::class, 'product_id', 'product_id');
     }
 
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
-
     public function getSubtotalAttribute(): float
     {
         if (! $this->product) {
             return 0;
         }
         return (float) $this->product->price * (int) $this->quantity;
+    }
+        public function getIdAttribute()
+    {
+        return $this->cart_item_id;
     }
 }

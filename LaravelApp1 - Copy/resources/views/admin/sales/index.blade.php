@@ -6,6 +6,7 @@
     <form method="GET" class="filter-bar" style="margin:0">
       <input type="date" name="from" class="form-control" value="{{ request('from') }}">
       <input type="date" name="to" class="form-control" value="{{ request('to') }}">
+      
       <button class="btn btn-primary">Filter</button>
     </form>
     <a href="{{ route('admin.sales.create') }}" class="btn btn-primary">+ New Walk-in Sale</a>

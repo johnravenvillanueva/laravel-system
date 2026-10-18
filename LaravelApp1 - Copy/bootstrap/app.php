@@ -11,7 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Register middleware aliases
+        $middleware->alias([
+            'admin.only'    => \App\Http\Middleware\AdminOnly::class,
+            'customer.only' => \App\Http\Middleware\CustomerOnly::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

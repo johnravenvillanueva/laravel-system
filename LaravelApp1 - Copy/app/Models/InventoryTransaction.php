@@ -27,10 +27,6 @@ class InventoryTransaction extends Model
         'transaction_date' => 'datetime',
     ];
 
-    /* -------------------------------------------------
-     |  Relationships
-     |-------------------------------------------------*/
-
     public function inventory()
     {
         return $this->belongsTo(InventoryItem::class, 'inventory_id', 'inventory_id');
@@ -41,9 +37,6 @@ class InventoryTransaction extends Model
         return $this->belongsTo(Admin::class, 'performed_by', 'admin_id');
     }
 
-    /* -------------------------------------------------
-     |  Helpers
-     |-------------------------------------------------*/
 
     public function isAddition(): bool
     {
@@ -53,5 +46,9 @@ class InventoryTransaction extends Model
     public function isDeduction(): bool
     {
         return $this->transaction_type === 'deduct';
+    }
+        public function getIdAttribute()
+    {
+        return $this->transaction_id;
     }
 }

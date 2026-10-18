@@ -3,36 +3,93 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Support\DemoData;
+use App\Models\Notification;
+use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = DemoData::orders();
-        if ($status = $request->query('status')) {
-            $orders = $orders->where('status', $status);
-        }
+        $query = Order::with(['customer', 'items.product']);
+
         if ($q = $request->query('q')) {
-            $orders = $orders->filter(fn($o) => str_contains((string)$o->id, $q));
+            $query->where(function ($sub) use ($q) {
+                $sub->where('reference_code', 'like', '%' . $q . '%')
+                    ->orWhere('guest_name', 'like', '%' . $q . '%')
+                    ->orWhereHas('customer', function ($c) use ($q) {
+                        $c->where('first_name', 'like', '%' . $q . '%')
+                        ->orWhere('last_name', 'like', '%' . $q . '%');
+                    });
+            });
         }
 
-        return view('admin.orders.index', ['orders' => $orders->values()]);
+        if ($status = $request->query('status')) {
+            $query->where('status', $status);
+        }
+
+        $orders = $query->latest('order_date')->get();
+
+        return view('admin.orders.index', compact('orders'));
     }
 
     public function show(int $id)
     {
-        $order = DemoData::orders()->firstWhere('id', $id) ?? DemoData::orders()->first();
-        return view('admin.orders.show', ['order' => $order]);
+        $order = Order::with(['items.product', 'customer', 'sales'])
+            ->findOrFail($id);
+
+        return view('admin.orders.show', compact('order'));
     }
 
     public function updateStatus(Request $request, int $id)
     {
-        $request->validate([
-            'status' => ['required','in:pending,confirmed,preparing,ready,completed,cancelled'],
+        $order = Order::findOrFail($id);
+
+        $data = $request->validate([
+            'status' => ['required', 'in:pending,confirmed,preparing,ready,completed,cancelled'],
         ]);
 
-        return redirect()->route('admin.orders.show', $id)->with('success', 'Order status updated.');
+        $previous = $order->status;
+
+        // If already terminal, don't allow regressions
+        if (in_array($previous, ['completed', 'cancelled']) && $data['status'] !== $previous) {
+            return back()->with('error', 'This order is already ' . $previous . ' and cannot be changed.');
+        }
+
+        $order->update(['status' => $data['status']]);
+
+        // Notify the customer (if it's a registered customer)
+        if ($order->customer_id && $previous !== $data['status']) {
+            Notification::create([
+                'customer_id' => $order->customer_id,
+                'order_id'    => $order->order_id,
+                'title'       => 'Order ' . $this->statusLabel($data['status']),
+                'message'     => 'Your order ' . $order->reference_code . ' is now ' . $data['status'] . '.',
+                'type'        => 'order_update',
+                'is_read'     => false,
+            ]);
+        }
+
+        // If marked as completed and not yet paid, mark paid (assumes payment at pickup)
+        if ($data['status'] === 'completed' && $order->payment_status === 'pending') {
+            $order->update(['payment_status' => 'paid']);
+        }
+
+        return back()->with('success', 'Order status updated to ' . ucfirst($data['status']) . '.');
+    }
+
+
+    protected function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'pending'   => 'Received',
+            'confirmed' => 'Confirmed',
+            'preparing' => 'Being Prepared',
+            'ready'     => 'Ready for Pickup',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
+            default     => 'Updated',
+        };
     }
 }
