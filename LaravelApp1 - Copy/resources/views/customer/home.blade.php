@@ -10,11 +10,6 @@
       <p>Freshly brewed coffee and oven-baked pastries — pre-order online and pick up at the counter, no waiting.</p>
       <div class="flex gap-12 hero-actions">
         <a href="{{ route('menu') }}" class="btn btn-primary">Browse Menu →</a>
-        @guest
-          <a href="{{ route('customer.guest.checkout') }}" class="btn btn-outline btn-hero-outline">
-            Order as Guest
-          </a>
-        @endguest
       </div>
     </div>
   </section>
@@ -99,20 +94,12 @@
       <p class="about-line">🕒 {{ $about['hours'] }}</p>
     </div>
   </section>
-
-  {{-- CTA --}}
-  @guest
-    <section class="card card-body landing-cta">
-      <h3 class="text-2xl bold">Ready to skip the line?</h3>
-      <p>
-        Create a free account to save your cart, track orders, and re-order favorites in one tap.
-        Or just order as a guest — no account needed.
-      </p>
-      <div class="flex gap-12 landing-cta-actions">
-        <a href="{{ route('register') }}" class="btn btn-primary btn-cta-light">Create Account</a>
-        <a href="{{ route('menu') }}" class="btn btn-outline btn-cta-outline">Order as Guest</a>
+        
+        @guest('customer')
+          <a href="{{ route('customer.guest.checkout') }}" class="btn btn-hero-outline">
+            Order as Guest
+          </a>
+        @endguest
       </div>
-    </section>
-  @endguest
 
 @endsection

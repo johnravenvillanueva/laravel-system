@@ -140,14 +140,18 @@ class OrderController extends Controller
     }
 
     public function placeOrder(Request $request)
-    {
-        $data = $request->validate([
+    {        $data = $request->validate([
             'pickup_date'    => ['required', 'date', 'after_or_equal:today'],
-            'pickup_time'    => ['required'],
+            'pickup_time'    => ['required', function ($attribute, $value, $fail) use ($request) {
+                $pickupDateTime = \Carbon\Carbon::parse($request->pickup_date . ' ' . $value);
+                
+                if ($pickupDateTime->isToday() && $pickupDateTime->lessThan(now()->addMinutes(15))) {
+                    $fail('The pickup time must be at least 15 minutes from now.');
+                }
+            }],
             'payment_method' => ['required', 'in:cash,gcash'],
             'notes'          => ['nullable', 'string', 'max:500'],
         ]);
-
         $cartItems = $request->session()->get('customer_cart', []);
 
         if (empty($cartItems)) {
@@ -158,7 +162,7 @@ class OrderController extends Controller
         $customer = $this->customer();
 
         $order = \DB::transaction(function () use ($data, $cartItems, $subtotal, $customer) {
-
+           
             $order = Order::create([
                 'reference_code' => Order::generateReferenceCode(),
                 'customer_id'    => $customer->customer_id,
@@ -191,6 +195,14 @@ class OrderController extends Controller
                 'message'     => 'Your pre-order ' . $order->reference_code . ' has been received.',
                 'type'        => 'order_update',
                 'is_read'     => false,
+            ]);
+            Notification::create([
+                'admin_id' => 1, // Sends to the main admin. Or loop through all admins.
+                'order_id' => $order->order_id,
+                'title'    => 'New Pre-Order Received',
+                'message'  => 'Order ' . $order->reference_code . ' was placed for pickup on ' . $order->pickup_date,
+                'type'     => 'new_order',
+                'is_read'  => false,
             ]);
 
             return $order;
@@ -227,7 +239,7 @@ class OrderController extends Controller
         return view('customer.profile', compact('user'));
     }
 
-    public function updateProfile(Request $request)
+   public function updateProfile(Request $request)
     {
         $customer = $this->customer();
 
@@ -237,7 +249,19 @@ class OrderController extends Controller
             'email'      => ['required', 'email', 'max:100', 'unique:customers,email,' . $customer->customer_id . ',customer_id'],
             'phone'      => ['nullable', 'string', 'max:15'],
             'address'    => ['nullable', 'string'],
+            'avatar'     => ['nullable', 'image', 'max:2048'], // <-- ADD THIS
         ]);
+
+        // Handle the avatar upload
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($customer->avatar && \Storage::disk('public')->exists(str_replace('storage/', '', $customer->avatar))) {
+                \Storage::disk('public')->delete(str_replace('storage/', '', $customer->avatar));
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $data['avatar'] = 'storage/' . $path;
+        }
 
         $customer->update($data);
 

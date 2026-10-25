@@ -9,3 +9,11 @@ if (layout === "admin") {
 if (layout === "public") {
     import("./customer");
 }
+
+  document.querySelectorAll('.logout-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      if (!confirm('Are you sure you want to log out?')) {
+        e.preventDefault();
+      }
+    });
+  });

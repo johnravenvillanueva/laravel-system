@@ -76,4 +76,8 @@ class Customer extends Authenticatable
     {
         return $this->customer_id;
     }
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
 }

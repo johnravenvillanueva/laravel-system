@@ -18,16 +18,11 @@ use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ProfileController;
 
-/* -------------------------------------------------
- |  PUBLIC / LANDING
- |-------------------------------------------------*/
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu');
 Route::get('/product/{id}', [MenuController::class, 'show'])->name('customer.product.show');
 
-/* -------------------------------------------------
- |  GUEST ORDER (no auth required)
- |-------------------------------------------------*/
+
 Route::prefix('guest')->name('customer.guest.')->group(function () {
     Route::get('/checkout', [GuestOrderController::class, 'checkout'])->name('checkout');
     Route::post('/checkout', [GuestOrderController::class, 'place'])->name('place');
@@ -35,10 +30,10 @@ Route::prefix('guest')->name('customer.guest.')->group(function () {
     Route::post('/cart/add/{product}', [GuestOrderController::class, 'addToCart'])->name('cart.add');
     Route::delete('/cart/remove/{product}', [GuestOrderController::class, 'removeFromCart'])->name('cart.remove');
 });
+Route::get('/notifications', [App\Http\Controllers\Admin\DashboardController::class, 'notifications'])->name('notifications');
+Route::post('/notifications/read-all', [App\Http\Controllers\Admin\DashboardController::class, 'markNotificationsRead'])->name('notifications.read-all');
 
-/* -------------------------------------------------
- |  AUTH
- |-------------------------------------------------*/
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
@@ -51,9 +46,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::view('/forgot-password', 'auth.forgot-password')->name('password.request');
 Route::post('/forgot-password', fn() => back()->with('info', 'Reset link sent (demo).'))->name('password.email');
 
-/* -------------------------------------------------
- |  CUSTOMER (must be logged in as customer)
- |-------------------------------------------------*/
 Route::middleware('customer.only')->prefix('customer')->name('customer.')->group(function () {
     Route::get('/cart', [CustomerOrderController::class, 'cart'])->name('cart');
     Route::post('/cart/add/{product}', [CustomerOrderController::class, 'addToCart'])->name('cart.add');
@@ -70,11 +62,10 @@ Route::middleware('customer.only')->prefix('customer')->name('customer.')->group
     Route::put('/profile/password', [CustomerOrderController::class, 'changePassword'])->name('profile.password');
 });
 
-/* -------------------------------------------------
- |  ADMIN / STAFF (must be logged in as admin)
- |-------------------------------------------------*/
 Route::middleware('admin.only')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+     Route::get('/notifications', [DashboardController::class, 'notifications'])->name('notifications');
+    Route::post('/notifications/read-all', [DashboardController::class, 'markNotificationsRead'])->name('notifications.read-all');
 
     // Users — staff/admin only
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

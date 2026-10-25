@@ -9,7 +9,7 @@
         <div>
           <div class="bold">Order #{{ str_pad($order->id,5,'0',STR_PAD_LEFT) }}</div>
           <div class="text-sm text-muted">{{ $order->created_at->format('M d, Y · h:i A') }}</div>
-          <div class="text-sm text-muted">Pickup: {{ $order->pickup_date }} {{ $order->pickup_time }}</div>
+          <div class="text-sm text-muted">Pickup: {{ \Carbon\Carbon::parse($order->pickup_date)->format('M d, Y') }} at {{ \Carbon\Carbon::parse($order->pickup_time)->format('h:i A') }}</div>
         </div>
         <div style="text-align:right">
           <span class="badge badge-{{ $order->status }}">{{ ucfirst($order->status) }}</span>

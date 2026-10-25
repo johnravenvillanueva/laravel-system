@@ -21,7 +21,18 @@
   font-size:.7rem;text-transform:uppercase;letter-spacing:.8px;
   color:#8a7565;padding:16px 14px 6px;font-weight:700;
 }
-
+.badge-count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background-color: var(--danger);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 999px;
+  line-height: 1;
+}
 .admin-main{flex:1;margin-left:250px;display:flex;flex-direction:column;min-width:0}
 
 .topbar{

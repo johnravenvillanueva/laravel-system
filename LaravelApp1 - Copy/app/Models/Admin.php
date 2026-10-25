@@ -84,4 +84,8 @@ class Admin extends Authenticatable
     {
         return $this->admin_id;
     }
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
+    }
 }

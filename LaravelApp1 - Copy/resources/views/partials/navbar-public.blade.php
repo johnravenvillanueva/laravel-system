@@ -29,10 +29,14 @@
         {{-- Customer logged in --}}
         <a href="{{ route('customer.cart') }}" class="btn btn-outline btn-sm">🛒 Cart</a>
         <a href="{{ route('customer.notifications') }}" class="btn btn-outline btn-sm">🔔</a>
-        <a href="{{ route('customer.profile') }}" class="avatar" title="{{ auth('customer')->user()->first_name }}">
-          {{ strtoupper(substr(auth('customer')->user()->first_name, 0, 1)) }}
-        </a>
-        <form action="{{ route('logout') }}" method="POST" style="display:inline">
+        <a href="{{ route('customer.profile') }}" title="{{ auth('customer')->user()->first_name }}">
+  @if(auth('customer')->user()->avatar)
+    <img src="{{ asset(auth('customer')->user()->avatar) }}" alt="Profile" class="avatar-img avatar-img-sm">
+  @else
+    <div class="avatar">{{ strtoupper(substr(auth('customer')->user()->first_name, 0, 1)) }}</div>
+  @endif
+</a>
+                <form action="{{ route('logout') }}" method="POST" class="logout-form" style="display:inline">
           @csrf
           <button class="btn btn-outline btn-sm">Logout</button>
         </form>

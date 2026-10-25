@@ -32,9 +32,11 @@
 
     <div class="nav-section">Account</div>
     <a href="{{ route('admin.profile') }}" class="{{ request()->routeIs('admin.profile') ? 'active' : '' }}">👤 Profile</a>
-    <form action="{{ route('logout') }}" method="POST">
+        <form action="{{ route('logout') }}" method="POST" class="logout-form">
       @csrf
-      <button style="width:100%;text-align:left;display:flex;gap:12px;padding:11px 14px;color:#c9b8a8;font-size:.9rem;background:none;border:none;cursor:pointer">🚪 Logout</button>
+      <button type="submit" class="btn-logout">
+        🚪 Logout
+      </button>
     </form>
   </nav>
 </aside>

@@ -6,7 +6,11 @@
   <div class="row" style="gap:24px;align-items:flex-start">
     <div class="card" style="width:280px;text-align:center">
       <div class="card-body">
-        <div class="avatar" style="width:90px;height:90px;font-size:2rem;margin:0 auto 16px">
+        @if($user->avatar)
+  <img src="{{ asset($user->avatar) }}" alt="{{ $user->first_name }}" class="avatar-img avatar-img-lg">
+@else
+  <div class="avatar avatar-img-lg">{{ strtoupper(substr($user->first_name,0,1)) }}</div>
+@endif
           {{ strtoupper(substr($user->first_name,0,1)) }}
         </div>
         <div class="bold text-lg">{{ $user->first_name }} {{ $user->last_name }}</div>

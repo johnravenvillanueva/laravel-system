@@ -53,4 +53,21 @@ class DashboardController extends Controller
             'chartData'     => $chartData,
         ]);
     }
+        public function notifications()
+    {
+        $notifications = \App\Models\Notification::where('admin_id', auth('admin')->id())
+            ->latest()
+            ->get();
+
+        return view('admin.notifications', compact('notifications'));
+    }
+
+    public function markNotificationsRead()
+    {
+        \App\Models\Notification::where('admin_id', auth('admin')->id())
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return back()->with('success', 'All notifications marked as read.');
+    }
 }

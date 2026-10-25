@@ -9,7 +9,24 @@
 .nav-links a{color:var(--muted);font-weight:500;transition:.2s}
 .nav-links a:hover,.nav-links a.active{color:var(--brand)}
 .nav-actions{display:flex;gap:10px;align-items:center}
+/* Hero Outline Button (for dark backgrounds) */
+.btn-hero-outline {
+  background: transparent;
+  color: #fff;
+  border-color: #fff;
+}
 
+.btn-hero-outline:hover {
+  background: rgba(255, 255, 255, .1);
+  color: #fff;
+}
+
+/* Flex utility for hero actions */
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
 /* Hero */
 .hero{background:linear-gradient(135deg,#6b3e26,#a86b3c);color:#fff;border-radius:20px;padding:60px 40px;margin-bottom:40px;position:relative;overflow:hidden}
 .hero h2{font-size:2.4rem;font-weight:800;margin-bottom:14px;max-width:600px}

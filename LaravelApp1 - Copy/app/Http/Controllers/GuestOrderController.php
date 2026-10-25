@@ -77,11 +77,18 @@ class GuestOrderController extends Controller
             'guest_phone'    => ['required', 'string', 'max:15'],
             'guest_email'    => ['nullable', 'email', 'max:100'],
             'pickup_date'    => ['required', 'date', 'after_or_equal:today'],
-            'pickup_time'    => ['required'],
+            'pickup_time'    => ['required', function ($attribute, $value, $fail) use ($request) {
+                // Combine the date and time to check if it's in the past
+                $pickupDateTime = \Carbon\Carbon::parse($request->pickup_date . ' ' . $value);
+                
+                // If the date is today, the time must be at least 15 minutes in the future
+                if ($pickupDateTime->isToday() && $pickupDateTime->lessThan(now()->addMinutes(15))) {
+                    $fail('The pickup time must be at least 15 minutes from now.');
+                }
+            }],
             'payment_method' => ['required', 'in:cash,gcash'],
             'notes'          => ['nullable', 'string', 'max:500'],
         ]);
-
         $cartItems = $request->session()->get('guest_cart', []);
 
         if (empty($cartItems)) {
@@ -92,7 +99,6 @@ class GuestOrderController extends Controller
 
         // Wrap in a transaction — either the order + items all save, or nothing does
         $order = DB::transaction(function () use ($data, $cartItems, $subtotal) {
-
             $order = Order::create([
                 'reference_code' => Order::generateReferenceCode(),
                 'customer_id'    => null, // guest — no customer row
@@ -118,6 +124,14 @@ class GuestOrderController extends Controller
                     'subtotal'             => $item['price'] * $item['qty'],
                     'special_instructions' => $item['note'] ?? null,
                 ]);
+                Notification::create([
+                'admin_id' => 1, // Sends to the main admin. Or loop through all admins.
+                'order_id' => $order->order_id,
+                'title'    => 'New Pre-Order Received',
+                'message'  => 'Order ' . $order->reference_code . ' was placed for pickup on ' . $order->pickup_date,
+                'type'     => 'new_order',
+                'is_read'  => false,
+            ]);
             }
 
             return $order;
