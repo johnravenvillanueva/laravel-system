@@ -6,100 +6,115 @@
   {{-- HERO --}}
   <section class="hero">
     <div class="hero-inner">
-      <h2>Skip the line.<br>Your coffee, ready when you are.</h2>
-      <p>Freshly brewed coffee and oven-baked pastries — pre-order online and pick up at the counter, no waiting.</p>
-      <div class="flex gap-12 hero-actions">
-        <a href="{{ route('menu') }}" class="btn btn-primary">Browse Menu →</a>
+      <span class="hero-status">{{ $about['hours'] }}</span>
+      <h1>Skip the line. Your coffee is ready when you are.</h1>
+      <p>Freshly brewed coffee and oven-baked pastries. Pre-order online and pick up at the counter, no waiting.</p>
+      <div class="hero-actions">
+        <a href="{{ route('menu') }}" class="btn btn-primary">Browse menu @include('partials.icon', ['ico' => 'arrow-right'])</a>
+        @guest('customer')
+          <a href="{{ route('customer.guest.checkout') }}" class="btn btn-hero-outline">Order as guest</a>
+        @endguest
       </div>
     </div>
+
+    @php $heroPicks = $featured->filter(fn ($p) => $p->image_url)->take(3)->values(); @endphp
+    @if($heroPicks->isNotEmpty())
+      <div class="hero-media" aria-hidden="true">
+        <span class="hero-ring"></span>
+        @foreach($heroPicks as $i => $p)
+          <figure class="hero-arch hero-arch-{{ $i + 1 }}">
+            <img src="{{ asset($p->image_url) }}" alt="">
+          </figure>
+        @endforeach
+      </div>
+    @endif
   </section>
 
   {{-- WHY US --}}
-  <div class="grid grid-4 mb-24">
-    <div class="card card-body feature-card">
-      <div class="feature-icon">⚡</div>
-      <div class="feature-title">Skip the Queue</div>
-      <p class="text-sm text-muted">Order ahead, pick up when ready.</p>
+  <section class="perks" aria-label="Why order with us">
+    <div class="perk">
+      <div class="perk-icon">@include('partials.icon', ['ico' => 'zap'])</div>
+      <div><h3>Skip the queue</h3><p>Order ahead, pick up when it's ready.</p></div>
     </div>
-    <div class="card card-body feature-card">
-      <div class="feature-icon">☕</div>
-      <div class="feature-title">Fresh Brews</div>
-      <p class="text-sm text-muted">Made-to-order every time.</p>
+    <div class="perk">
+      <div class="perk-icon">@include('partials.icon', ['ico' => 'coffee'])</div>
+      <div><h3>Fresh brews</h3><p>Made to order, every time.</p></div>
     </div>
-    <div class="card card-body feature-card">
-      <div class="feature-icon">🥐</div>
-      <div class="feature-title">Daily Pastries</div>
-      <p class="text-sm text-muted">Baked fresh every morning.</p>
+    <div class="perk">
+      <div class="perk-icon">@include('partials.icon', ['ico' => 'cookie'])</div>
+      <div><h3>Daily pastries</h3><p>Baked fresh every morning.</p></div>
     </div>
-    <div class="card card-body feature-card">
-      <div class="feature-icon">💳</div>
-      <div class="feature-title">Pay at Pickup</div>
-      <p class="text-sm text-muted">Cash or GCash — no online payment.</p>
+    <div class="perk">
+      <div class="perk-icon">@include('partials.icon', ['ico' => 'wallet'])</div>
+      <div><h3>Pay at pickup</h3><p>Cash or GCash. Nothing to pay online.</p></div>
     </div>
-  </div>
+  </section>
 
   {{-- HOW IT WORKS --}}
-  <section class="mb-24">
-    <h3 class="text-xl bold section-title-center">How It Works</h3>
-    <p class="text-muted text-sm section-sub-center">Three steps to your perfect cup.</p>
-    <div class="grid grid-3">
-      <div class="card card-body step-card">
-        <div class="step-icon">🍽️</div>
-        <div class="bold text-lg step-title">1. Browse</div>
-        <p class="text-sm text-muted mt-8">Explore our menu of coffee, drinks, and pastries.</p>
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <h2>How it works</h2>
+        <p>Three steps to your perfect cup.</p>
       </div>
-      <div class="card card-body step-card">
-        <div class="step-icon">🛒</div>
-        <div class="bold text-lg step-title">2. Pre-Order</div>
-        <p class="text-sm text-muted mt-8">Pick a pickup date and time. Checkout in one click.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Browse</h3>
+        <p>Explore our menu of coffee, drinks and pastries.</p>
       </div>
-      <div class="card card-body step-card">
-        <div class="step-icon">☕</div>
-        <div class="bold text-lg step-title">3. Pick Up</div>
-        <p class="text-sm text-muted mt-8">Walk in, grab your order, and go.</p>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Pre-order</h3>
+        <p>Pick a pickup date and time, then check out in one go.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Pick up</h3>
+        <p>Walk in, grab your order and go.</p>
       </div>
     </div>
   </section>
 
   {{-- MENU PREVIEW --}}
-  <div class="flex between mb-16">
-    <h3 class="text-xl bold">Featured Drinks</h3>
-    <a href="{{ route('menu') }}" class="text-sm" style="color:var(--brand)">View full menu →</a>
-  </div>
-  <div class="grid grid-4 mb-24">
-    @foreach($featured as $p)
-      @include('components.product-card', ['product' => $p])
-    @endforeach
-  </div>
-
-  <div class="flex between mb-16">
-    <h3 class="text-xl bold">Fresh Pastries</h3>
-  </div>
-  <div class="grid grid-4 mb-24">
-    @foreach($pastries as $p)
-      @include('components.product-card', ['product' => $p])
-    @endforeach
-  </div>
-
-  {{-- ABOUT --}}
-  <section class="grid grid-2 mb-24">
-    <div class="card card-body about-card">
-      <h4 class="text-lg bold mb-16">About Issang Macchiatos</h4>
-      <p>{{ $about['story'] }}</p>
+  <section class="section">
+    <div class="section-head">
+      <h2>Featured drinks</h2>
+      <a href="{{ route('menu') }}" class="link-arrow">View full menu @include('partials.icon', ['ico' => 'arrow-right'])</a>
     </div>
-    <div class="card card-body about-card">
-      <h4 class="text-lg bold mb-16">Visit Us</h4>
-      <p>📍 {{ $about['address'] }}</p>
-      <p class="about-line">📞 {{ $about['phone'] }}</p>
-      <p class="about-line">🕒 {{ $about['hours'] }}</p>
+    <div class="grid grid-4">
+      @foreach($featured as $p)
+        @include('components.product-card', ['product' => $p])
+      @endforeach
     </div>
   </section>
-        
-        @guest('customer')
-          <a href="{{ route('customer.guest.checkout') }}" class="btn btn-hero-outline">
-            Order as Guest
-          </a>
-        @endguest
+
+  @if($pastries->isNotEmpty())
+    <section class="section">
+      <div class="section-head">
+        <h2>Fresh pastries</h2>
       </div>
+      <div class="grid grid-4">
+        @foreach($pastries as $p)
+          @include('components.product-card', ['product' => $p])
+        @endforeach
+      </div>
+    </section>
+  @endif
+
+  {{-- ABOUT --}}
+  <section class="about-grid">
+    <div class="card about-story">
+      <h2>About Issang Macchiatos</h2>
+      <p>{{ $about['story'] }}</p>
+    </div>
+    <div class="visit-card">
+      <h2>Visit us</h2>
+      <div class="visit-line">@include('partials.icon', ['ico' => 'map-pin']) <span>{{ $about['address'] }}</span></div>
+      <div class="visit-line">@include('partials.icon', ['ico' => 'phone']) <span>{{ $about['phone'] }}</span></div>
+      <div class="visit-line">@include('partials.icon', ['ico' => 'clock']) <span>{{ $about['hours'] }}</span></div>
+    </div>
+  </section>
 
 @endsection
