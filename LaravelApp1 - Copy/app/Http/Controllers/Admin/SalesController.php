@@ -72,12 +72,10 @@ class SalesController extends Controller
                 'transaction_type' => 'walk-in',
             ]);
 
-            // 2. Save each line item + deduct inventory if there's a matching ingredient
+                       // 2. Save each line item + deduct inventory
             foreach ($items as $row) {
                 $product = Product::find($row['id']);
-                if (! $product) {
-                    continue; // skip unknown products silently
-                }
+                if (! $product) continue;
 
                 SaleItem::create([
                     'sale_id'    => $sale->sale_id,
@@ -87,7 +85,8 @@ class SalesController extends Controller
                     'subtotal'   => $row['price'] * $row['qty'],
                 ]);
 
-                $this->tryDeductInventory($product, $row['qty'], $sale, $staffId);
+                // 👇 Call the new centralized logic from the Product model
+                $product->deductInventory($row['qty'], 'sale', $sale->sale_id, $staffId);
             }
 
             return $sale;
@@ -106,31 +105,6 @@ class SalesController extends Controller
         return view('admin.sales.show', compact('sale'));
     }
 
-    protected function tryDeductInventory(Product $product, int $qty, Sale $sale, int $staffId): void
-    {
-        $name = strtolower($product->name);
-
-        // Beans for coffee-type drinks
-        if (str_contains($name, 'macchiato') || str_contains($name, 'latte')
-            || str_contains($name, 'americano') || str_contains($name, 'cappuccino')) {
-
-            $this->deductItem('Espresso Beans', 0.02 * $qty, $sale, $staffId);
-        }
-
-        // Milk for milk-based drinks
-        if (str_contains($name, 'latte') || str_contains($name, 'macchiato')
-            || str_contains($name, 'cappuccino')) {
-
-            $this->deductItem('Whole Milk', 0.15 * $qty, $sale, $staffId);
-        }
-
-        // Cups for every drink (not pastry)
-        if (! str_contains($name, 'croissant') && ! str_contains($name, 'muffin')
-            && ! str_contains($name, 'cookie') && ! str_contains($name, 'bread')) {
-
-            $this->deductItem('Paper Cups (16oz)', 1 * $qty, $sale, $staffId);
-        }
-    }
 
     protected function deductItem(string $itemName, float $qty, Sale $sale, int $staffId): void
     {

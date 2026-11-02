@@ -57,6 +57,37 @@ class OrderController extends Controller
             return back()->with('error', 'This order is already ' . $previous . ' and cannot be changed.');
         }
 
+        // If marking as completed, generate a Sale record for reporting
+        if ($data['status'] === 'completed' && $previous !== 'completed') {
+            \DB::transaction(function () use ($order) {
+                // 1. Create the Sale
+                $sale = \App\Models\Sale::create([
+                    'staff_id'           => auth('admin')->id(), // The staff member who clicked 'Completed'
+                    'customer_id'        => $order->customer_id,
+                    'reference_order_id' => $order->order_id, // Link it!
+                    'sale_date'          => now(),
+                    'total_amount'       => $order->total_amount,
+                    'payment_method'     => $order->payment_method,
+                    'transaction_type'   => 'pre-order',
+                ]);
+
+                // 2. Copy the Order Items to Sale Items
+                foreach ($order->items as $item) {
+                    \App\Models\SaleItem::create([
+                        'sale_id'    => $sale->sale_id,
+                        'product_id' => $item->product_id,
+                        'quantity'   => $item->quantity,
+                        'unit_price' => $item->unit_price,
+                        'subtotal'   => $item->subtotal,
+                    ]);
+                }
+
+                // 3. Mark payment as paid
+                $order->update(['payment_status' => 'paid']);
+            });
+        }
+
+        // Update the actual order status
         $order->update(['status' => $data['status']]);
 
         // Notify the customer (if it's a registered customer)
@@ -69,12 +100,43 @@ class OrderController extends Controller
                 'type'        => 'order_update',
                 'is_read'     => false,
             ]);
-        }
+                    // If marking as completed, generate a Sale record for reporting
+        if ($data['status'] === 'completed' && $previous !== 'completed') {
+            \DB::transaction(function () use ($order) {
+                // 1. Create the Sale
+                $sale = \App\Models\Sale::create([
+                    'staff_id'           => auth('admin')->id(),
+                    'customer_id'        => $order->customer_id,
+                    'reference_order_id' => $order->order_id,
+                    'sale_date'          => now(),
+                    'total_amount'       => $order->total_amount,
+                    'payment_method'     => $order->payment_method,
+                    'transaction_type'   => 'pre-order',
+                ]);
 
-        // If marked as completed and not yet paid, mark paid (assumes payment at pickup)
-        if ($data['status'] === 'completed' && $order->payment_status === 'pending') {
-            $order->update(['payment_status' => 'paid']);
+                // 2. Copy items AND deduct inventory
+                foreach ($order->items as $item) {
+                    \App\Models\SaleItem::create([
+                        'sale_id'    => $sale->sale_id,
+                        'product_id' => $item->product_id,
+                        'quantity'   => $item->quantity,
+                        'unit_price' => $item->unit_price,
+                        'subtotal'   => $item->subtotal,
+                    ]);
+
+                    // 👇 THIS IS THE NEW LINE 👇
+                    // Deduct inventory for this item
+                    if ($item->product) {
+                        $item->product->deductInventory($item->quantity, 'order', $order->order_id, auth('admin')->id());
+                    }
+                }
+
+                // 3. Mark payment as paid
+                $order->update(['payment_status' => 'paid']);
+            });
         }
+        }
+        
 
         return back()->with('success', 'Order status updated to ' . ucfirst($data['status']) . '.');
     }
