@@ -69,40 +69,69 @@ class Product extends Model
     {
         return $this->product_id;
     }
-        /**
-     * Best-effort inventory deduction based on product name.
-     * (A real system would use a `product_ingredients` pivot table).
+    /**
+     * The recipe: inventory items this product deducts per unit sold.
+     * Managed from the admin Add/Edit Product forms.
+     */
+    public function ingredients()
+    {
+        return $this->hasMany(ProductIngredient::class, 'product_id', 'product_id');
+    }
+
+    /**
+     * Deduct stock for $qty units of this product, using the ingredients
+     * the admin set on the product (what you see on the product form is
+     * exactly what gets deducted).
      */
     public function deductInventory(int $qty, $referenceType, $referenceId, $staffId)
     {
-        $name = strtolower($this->name);
+        $this->loadMissing('ingredients.inventoryItem');
 
-        // 1. Deduct Beans for coffee drinks
+        foreach ($this->ingredients as $ingredient) {
+            if (! $ingredient->inventoryItem) continue;
+
+            $this->deductItem(
+                $ingredient->inventoryItem->name,
+                (float) $ingredient->quantity * $qty,
+                $referenceType,
+                $referenceId,
+                $staffId
+            );
+        }
+    }
+
+    /**
+     * The old hard-coded, name-based rules. No longer used when selling;
+     * only used to seed starter recipes (migration + ProductIngredientSeeder).
+     *
+     * @return array<string,float> inventory item name => qty per 1 product
+     */
+    public static function legacyRecipe(string $productName): array
+    {
+        $name = strtolower($productName);
+        $r = [];
+
         if (str_contains($name, 'macchiato') || str_contains($name, 'latte')
             || str_contains($name, 'americano') || str_contains($name, 'cappuccino') || str_contains($name, 'machiatos')) {
-            $this->deductItem('Coffee Beans (Arabica)', 0.02 * $qty, $referenceType, $referenceId, $staffId);
+            $r['Coffee Beans (Arabica)'] = 0.02;
         }
-
-        // 2. Deduct Milk for milk-based drinks
         if (str_contains($name, 'latte') || str_contains($name, 'macchiato') || str_contains($name, 'cappuccino') || str_contains($name, 'machiatos')) {
-            $this->deductItem('Fresh Milk', 0.15 * $qty, $referenceType, $referenceId, $staffId);
+            $r['Fresh Milk'] = 0.15;
         }
-        
-        // 3. Deduct specific syrups/powders
         if (str_contains($name, 'matcha') || str_contains($name, 'machatos')) {
-             $this->deductItem('Matcha Powder', 0.02 * $qty, $referenceType, $referenceId, $staffId);
+            $r['Matcha Powder'] = 0.02;
         }
         if (str_contains($name, 'strawberry')) {
-             $this->deductItem('Strawberry Syrup', 0.03 * $qty, $referenceType, $referenceId, $staffId);
+            $r['Strawberry Syrup'] = 0.03;
         }
         if (str_contains($name, 'choco') || str_contains($name, 'ube')) {
-             $this->deductItem('Chocolate Syrup', 0.03 * $qty, $referenceType, $referenceId, $staffId); // Just as an example
+            $r['Chocolate Syrup'] = 0.03;
+        }
+        if (! str_contains($name, 'cookie')) {
+            $r['Plastic Cups (16oz)'] = 1;
         }
 
-        // 4. Deduct Cups for any drink (not pastry)
-        if (! str_contains($name, 'cookie')) {
-            $this->deductItem('Plastic Cups (16oz)', 1 * $qty, $referenceType, $referenceId, $staffId);
-        }
+        return $r;
     }
 
     protected function deductItem(string $itemName, float $qty, $referenceType, $referenceId, $staffId)

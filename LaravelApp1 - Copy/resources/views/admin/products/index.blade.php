@@ -33,6 +33,13 @@
                 <div>
                   <div class="bold">{{ $p->name }}</div>
                   <div class="text-sm text-muted">{{ Str::limit($p->description,60) }}</div>
+                  <div class="text-sm text-muted">
+                    @forelse($p->ingredients as $ing)
+                      {{ $ing->inventoryItem->name ?? '?' }}: {{ rtrim(rtrim(number_format((float)$ing->quantity,2,'.',''),'0'),'.') }} {{ $ing->inventoryItem->unit ?? '' }}@if(!$loop->last) · @endif
+                    @empty
+                      No stock deduction set
+                    @endforelse
+                  </div>
                 </div>
               </div>
             </td>

@@ -25,6 +25,8 @@
             <option value="0">Unavailable</option>
           </select>
         </div>
+        @include('admin.products._ingredients')
+
         <div class="flex gap-12">
           <button class="btn btn-primary">Save Product</button>
           <a href="{{ route('admin.products.index') }}" class="btn btn-outline">Cancel</a>

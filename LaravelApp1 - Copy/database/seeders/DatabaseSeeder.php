@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,      // 2. categories (no deps)
             ProductSeeder::class,       // 3. products (needs categories)
             InventorySeeder::class,     // 4. inventory (no deps)
+            ProductIngredientSeeder::class, // 4b. product recipes (needs products + inventory)
             CustomerSeeder::class,      // 5. customers (no deps)
             OrderSeeder::class,         // 6. orders (needs customers + products)
             SaleSeeder::class,          // 7. sales (needs admins + customers + orders + products)

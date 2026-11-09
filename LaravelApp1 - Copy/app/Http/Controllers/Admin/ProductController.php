@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\InventoryItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -13,7 +15,7 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $query = Product::with('category');
+        $query = Product::with(['category', 'ingredients.inventoryItem']);
 
         if ($q = $request->query('q')) {
             $query->where('name', 'like', '%' . $q . '%');
@@ -32,19 +34,22 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::orderBy('name')->get();
-        return view('admin.products.create', compact('categories'));
+        $inventoryItems = InventoryItem::orderBy('name')->get();
+        return view('admin.products.create', compact('categories', 'inventoryItems'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $this->dropBlankIngredientRows($request);
+
+        $data = $request->validate(array_merge([
             'name'         => ['required', 'string', 'max:100'],
             'description'  => ['nullable', 'string'],
             'category_id'  => ['required', 'exists:categories,category_id'],
             'price'        => ['required', 'numeric', 'min:0'],
             'is_available' => ['required', 'in:0,1'],
             'image'        => ['nullable', 'image', 'max:2048'], // max 2 MB
-        ]);
+        ], $this->ingredientRules()), $this->ingredientMessages());
 
         // Handle image upload
         if ($request->hasFile('image')) {
@@ -53,7 +58,13 @@ class ProductController extends Controller
         }
         unset($data['image']);
 
-        Product::create($data);
+        $ingredients = $data['ingredients'] ?? [];
+        unset($data['ingredients']);
+
+        DB::transaction(function () use ($data, $ingredients) {
+            $product = Product::create($data);
+            $this->syncIngredients($product, $ingredients);
+        });
 
         return redirect()
             ->route('admin.products.index')
@@ -62,23 +73,26 @@ class ProductController extends Controller
 
     public function edit(int $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::with('ingredients.inventoryItem')->findOrFail($id);
         $categories = Category::orderBy('name')->get();
-        return view('admin.products.edit', compact('product', 'categories'));
+        $inventoryItems = InventoryItem::orderBy('name')->get();
+        return view('admin.products.edit', compact('product', 'categories', 'inventoryItems'));
     }
 
     public function update(Request $request, int $id)
     {
         $product = Product::findOrFail($id);
 
-        $data = $request->validate([
+        $this->dropBlankIngredientRows($request);
+
+        $data = $request->validate(array_merge([
             'name'         => ['required', 'string', 'max:100'],
             'description'  => ['nullable', 'string'],
             'category_id'  => ['required', 'exists:categories,category_id'],
             'price'        => ['required', 'numeric', 'min:0'],
             'is_available' => ['required', 'in:0,1'],
             'image'        => ['nullable', 'image', 'max:2048'],
-        ]);
+        ], $this->ingredientRules()), $this->ingredientMessages());
 
         if ($request->hasFile('image')) {
             // Delete old file if it exists
@@ -91,7 +105,13 @@ class ProductController extends Controller
         }
         unset($data['image']);
 
-        $product->update($data);
+        $ingredients = $data['ingredients'] ?? [];
+        unset($data['ingredients']);
+
+        DB::transaction(function () use ($product, $data, $ingredients) {
+            $product->update($data);
+            $this->syncIngredients($product, $ingredients);
+        });
 
         return redirect()
             ->route('admin.products.index')
@@ -120,5 +140,53 @@ class ProductController extends Controller
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Product deleted.');
+    }
+
+    /* -------------------------------------------------
+     |  Ingredients (recipe) helpers
+     |-------------------------------------------------*/
+
+    /** Ignore completely empty ingredient rows submitted by the form. */
+    protected function dropBlankIngredientRows(Request $request): void
+    {
+        $rows = collect($request->input('ingredients', []))
+            ->filter(fn ($row) => is_array($row)
+                && (filled($row['inventory_id'] ?? null) || filled($row['quantity'] ?? null)))
+            ->values()
+            ->all();
+
+        $request->merge(['ingredients' => $rows]);
+    }
+
+    protected function ingredientRules(): array
+    {
+        return [
+            'ingredients'                 => ['nullable', 'array'],
+            'ingredients.*.inventory_id'  => ['required', 'exists:inventory_items,inventory_id', 'distinct'],
+            'ingredients.*.quantity'      => ['required', 'numeric', 'gt:0'],
+        ];
+    }
+
+    protected function ingredientMessages(): array
+    {
+        return [
+            'ingredients.*.inventory_id.required' => 'Please choose an inventory item for each ingredient row.',
+            'ingredients.*.inventory_id.distinct' => 'The same inventory item is listed more than once.',
+            'ingredients.*.quantity.required'     => 'Please enter the amount used for each ingredient row.',
+            'ingredients.*.quantity.gt'           => 'Ingredient amounts must be greater than 0.',
+        ];
+    }
+
+    /** Replace the product's ingredient list with what was submitted. */
+    protected function syncIngredients(Product $product, array $ingredients): void
+    {
+        $product->ingredients()->delete();
+
+        foreach ($ingredients as $row) {
+            $product->ingredients()->create([
+                'inventory_id' => $row['inventory_id'],
+                'quantity'     => $row['quantity'],
+            ]);
+        }
     }
 }

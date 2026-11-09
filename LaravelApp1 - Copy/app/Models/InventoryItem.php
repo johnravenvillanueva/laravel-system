@@ -43,8 +43,4 @@ class InventoryItem extends Model
     {
         return number_format((float) $this->quantity, 2) . ' ' . $this->unit;
     }
-        public function getIdAttribute()
-    {
-        return $this->cart_id;
-    }
 }
