@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\Product;
+use App\Support\OrderPickupCapacity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -140,9 +141,10 @@ class OrderController extends Controller
     }
 
     public function placeOrder(Request $request)
-    {        $data = $request->validate([
-            'pickup_date'    => ['required', 'date', 'after_or_equal:today'],
-            'pickup_time'    => ['required', function ($attribute, $value, $fail) use ($request) {
+    {
+        $data = $request->validate([
+            'pickup_date'    => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+            'pickup_time'    => ['required', 'date_format:H:i', function ($attribute, $value, $fail) use ($request) {
                 $pickupDateTime = \Carbon\Carbon::parse($request->pickup_date . ' ' . $value);
                 
                 if ($pickupDateTime->isToday() && $pickupDateTime->lessThan(now()->addMinutes(15))) {
@@ -162,13 +164,14 @@ class OrderController extends Controller
         $customer = $this->customer();
 
         $order = \DB::transaction(function () use ($data, $cartItems, $subtotal, $customer) {
-           
+            OrderPickupCapacity::ensureAvailable($data['pickup_date'], $data['pickup_time']);
+
             $order = Order::create([
                 'reference_code' => Order::generateReferenceCode(),
                 'customer_id'    => $customer->customer_id,
                 'order_date'     => now(),
                 'pickup_date'    => $data['pickup_date'],
-                'pickup_time'    => $data['pickup_time'],
+                'pickup_time'    => $data['pickup_time'] . ':00',
                 'status'         => 'pending',
                 'total_amount'   => $subtotal,
                 'payment_method' => $data['payment_method'],

@@ -42,8 +42,10 @@
             <div class="form-group guest-col">
               <label class="form-label">Pickup Time</label>
               <input type="time" name="pickup_time" class="form-control" required>
+              @error('pickup_time') <div class="text-sm" style="color:#c0392b">{{ $message }}</div> @enderror
             </div>
           </div>
+          <p class="text-sm text-muted">Each pickup date and time can have up to 5 orders.</p>
           <div class="form-group">
             <label class="form-label">Payment Method</label>
             <select name="payment_method" class="form-control" required>

@@ -7,6 +7,7 @@ use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Support\OrderPickupCapacity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -78,8 +79,8 @@ class GuestOrderController extends Controller
             'guest_name'     => ['required', 'string', 'max:100'],
             'guest_phone'    => ['required', 'string', 'max:15'],
             'guest_email'    => ['nullable', 'email', 'max:100'],
-            'pickup_date'    => ['required', 'date', 'after_or_equal:today'],
-            'pickup_time'    => ['required', function ($attribute, $value, $fail) use ($request) {
+            'pickup_date'    => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
+            'pickup_time'    => ['required', 'date_format:H:i', function ($attribute, $value, $fail) use ($request) {
                 // Combine the date and time to check if it's in the past
                 $pickupDateTime = \Carbon\Carbon::parse($request->pickup_date . ' ' . $value);
                 
@@ -101,6 +102,8 @@ class GuestOrderController extends Controller
 
         // Wrap in a transaction — either the order + items all save, or nothing does
         $order = DB::transaction(function () use ($data, $cartItems, $subtotal) {
+            OrderPickupCapacity::ensureAvailable($data['pickup_date'], $data['pickup_time']);
+
             $order = Order::create([
                 'reference_code' => Order::generateReferenceCode(),
                 'customer_id'    => null, // guest — no customer row
@@ -109,7 +112,7 @@ class GuestOrderController extends Controller
                 'guest_email'    => $data['guest_email'] ?? null,
                 'order_date'     => now(),
                 'pickup_date'    => $data['pickup_date'],
-                'pickup_time'    => $data['pickup_time'],
+                'pickup_time'    => $data['pickup_time'] . ':00',
                 'status'         => 'pending',
                 'total_amount'   => $subtotal,
                 'payment_method' => $data['payment_method'],
