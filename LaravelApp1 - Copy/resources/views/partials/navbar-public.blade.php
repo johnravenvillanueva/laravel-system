@@ -44,6 +44,12 @@
 
       @else
         {{-- Guest --}}
+        <a href="{{ route('customer.guest.checkout') }}" class="icon-btn" aria-label="Guest cart" title="Guest cart">
+          @include('partials.icon', ['ico' => 'cart'])
+          @if(count(session('guest_cart', [])))
+            <span class="badge">{{ count(session('guest_cart', [])) }}</span>
+          @endif
+        </a>
         <a href="{{ route('login') }}" class="btn btn-outline btn-sm">Login</a>
         <a href="{{ route('register') }}" class="btn btn-primary btn-sm hide-xs">Sign Up</a>
       @endif

@@ -62,10 +62,12 @@
         <div class="card-header">Order Summary</div>
         <div class="card-body">
           @if(!empty($cartItems))
-            @foreach($cartItems as $item)
+            @foreach($cartItems as $pid => $item)
               <div class="flex between mb-16 text-sm">
                 <span>{{ $item['qty'] }}× {{ $item['name'] }}</span>
-                <span class="bold">₱{{ number_format($item['price'] * $item['qty'],2) }}</span>
+                <span class="bold">₱{{ number_format($item['price'] * $item['qty'],2) }}
+                  <button type="submit" form="remove-{{ $pid }}" class="icon-btn" aria-label="Remove {{ $item['name'] }}" title="Remove">✕</button>
+                </span>
               </div>
             @endforeach
           @else
@@ -77,12 +79,18 @@
             <span class="bold">Total</span>
             <span class="bold text-lg guest-summary-total">₱{{ number_format($subtotal,2) }}</span>
           </div>
-          <button class="btn btn-primary btn-block">Place Guest Order</button>
+          <button class="btn btn-primary btn-block" @disabled(empty($cartItems))>Place Guest Order</button>
           <p class="text-sm text-muted guest-note">Payment is made upon pickup.</p>
         </div>
       </div>
     </div>
   </form>
+
+  @foreach($cartItems as $pid => $item)
+    <form id="remove-{{ $pid }}" method="POST" action="{{ route('customer.guest.cart.remove', $pid) }}" style="display:none">
+      @csrf @method('DELETE')
+    </form>
+  @endforeach
 
   <div class="guest-footer">
     <p class="text-sm text-muted">Want to track your orders and re-order faster?</p>

@@ -16,7 +16,7 @@
       <p class="text-muted mt-8">{{ $product->description }}</p>
       <div class="text-2xl bold mt-16" style="color:var(--brand)">₱{{ number_format($product->price,2) }}</div>
 
-      <form method="POST" action="{{ route('customer.cart.add', $product->id) }}" class="mt-24">
+      <form method="POST" action="{{ auth('customer')->check() ? route('customer.cart.add', $product->id) : route('customer.guest.cart.add', $product->id) }}" class="mt-24">
         @csrf
         <div class="form-group">
           <label class="form-label">Special Instructions</label>

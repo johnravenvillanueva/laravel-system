@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -124,14 +126,18 @@ class GuestOrderController extends Controller
                     'subtotal'             => $item['price'] * $item['qty'],
                     'special_instructions' => $item['note'] ?? null,
                 ]);
+            }
+
+            // One notification per admin/staff account (once per order, not per item)
+            foreach (Admin::pluck('admin_id') as $adminId) {
                 Notification::create([
-                'admin_id' => 1, // Sends to the main admin. Or loop through all admins.
-                'order_id' => $order->order_id,
-                'title'    => 'New Pre-Order Received',
-                'message'  => 'Order ' . $order->reference_code . ' was placed for pickup on ' . $order->pickup_date,
-                'type'     => 'new_order',
-                'is_read'  => false,
-            ]);
+                    'admin_id' => $adminId,
+                    'order_id' => $order->order_id,
+                    'title'    => 'New Pre-Order Received',
+                    'message'  => 'Order ' . $order->reference_code . ' was placed for pickup on ' . $order->pickup_date->format('M d, Y'),
+                    'type'     => 'new_order',
+                    'is_read'  => false,
+                ]);
             }
 
             return $order;

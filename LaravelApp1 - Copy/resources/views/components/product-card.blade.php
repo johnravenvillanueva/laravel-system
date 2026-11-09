@@ -11,7 +11,7 @@
     <div class="text-sm text-muted">{{ Str::limit($product->description, 56) }}</div>
     <div class="flex between mt-8">
       <span class="product-price">₱{{ number_format($product->price, 2) }}</span>
-      <form method="POST" action="{{ route('customer.cart.add', $product->product_id) }}">
+      <form method="POST" action="{{ auth('customer')->check() ? route('customer.cart.add', $product->product_id) : route('customer.guest.cart.add', $product->product_id) }}">
         @csrf
         <input type="hidden" name="quantity" value="1">
         <button class="btn btn-primary btn-sm" aria-label="Add {{ $product->name }} to cart">@include('partials.icon', ['ico' => 'plus', 'icoClass' => 'icon-sm']) Add</button>
