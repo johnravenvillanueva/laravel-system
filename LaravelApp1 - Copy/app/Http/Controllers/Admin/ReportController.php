@@ -71,28 +71,22 @@ class ReportController extends Controller
             });
         }
 
-        $items = $query->orderBy('category')->orderBy('name')->get();
-
-        $totalItems = $items->count();
-        $lowCount   = $items->filter(fn($i) => $i->isLowStock())->count();
-
-        // Rough valuation — just a demo. Real value = cost_per_unit × quantity.
-        // We don't store cost per item yet, so we use a placeholder multiplier.
-        $totalValue = $items->sum(function ($i) {
-            $placeholderUnitCost = match (strtolower($i->unit)) {
-                'kg'  => 600.00,
-                'l'   => 120.00,
-                'pcs' => 5.00,
-                default => 50.00,
-            };
-            return (float) $i->quantity * $placeholderUnitCost;
-        });
+        $items = (clone $query)->orderBy('category')->orderBy('name')->get();
+        $summary = $query
+            ->selectRaw('COUNT(*) as total_items')
+            ->selectRaw('SUM(CASE WHEN quantity <= min_threshold THEN 1 ELSE 0 END) as low_count')
+            ->selectRaw('SUM(CASE WHEN quantity <= 0 THEN 1 ELSE 0 END) as out_count')
+            ->selectRaw('SUM(CASE WHEN unit_cost IS NULL THEN 1 ELSE 0 END) as uncosted_count')
+            ->selectRaw('SUM(CASE WHEN unit_cost IS NOT NULL THEN quantity * unit_cost ELSE 0 END) as total_value')
+            ->first();
 
         return view('admin.reports.inventory', [
-            'items'      => $items,
-            'totalItems' => $totalItems,
-            'lowCount'   => $lowCount,
-            'totalValue' => $totalValue,
+            'items'           => $items,
+            'totalItems'      => $summary->total_items ?? 0,
+            'lowCount'        => $summary->low_count ?? 0,
+            'outOfStockCount' => $summary->out_count ?? 0,
+            'uncostedCount'   => $summary->uncosted_count ?? 0,
+            'totalValue'      => $summary->total_value ?? 0,
         ]);
     }
 

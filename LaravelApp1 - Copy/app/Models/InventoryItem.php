@@ -13,12 +13,14 @@ class InventoryItem extends Model
         'name',
         'category',
         'quantity',
+        'unit_cost',
         'unit',
         'min_threshold',
     ];
 
     protected $casts = [
         'quantity'      => 'decimal:2',
+        'unit_cost'     => 'decimal:2',
         'min_threshold' => 'decimal:2',
         'created_at'    => 'datetime',
         'updated_at'    => 'datetime',
