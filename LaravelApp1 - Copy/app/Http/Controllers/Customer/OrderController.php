@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Notification;
 use App\Models\Order;
 use App\Models\Product;
@@ -279,14 +280,16 @@ class OrderController extends Controller
                 'type'        => 'order_update',
                 'is_read'     => false,
             ]);
-            Notification::create([
-                'admin_id' => 1, // Sends to the main admin. Or loop through all admins.
-                'order_id' => $order->order_id,
-                'title'    => 'New Pre-Order Received',
-                'message'  => 'Order ' . $order->reference_code . ' was placed for pickup on ' . $order->pickup_date,
-                'type'     => 'new_order',
-                'is_read'  => false,
-            ]);
+            foreach (Admin::where('is_active', true)->get() as $admin) {
+                Notification::create([
+                    'admin_id' => $admin->admin_id,
+                    'order_id' => $order->order_id,
+                    'title'    => 'New Pre-Order Received',
+                    'message'  => 'Order ' . $order->reference_code . ' was placed for pickup on ' . $order->pickup_date,
+                    'type'     => 'new_order',
+                    'is_read'  => false,
+                ]);
+            }
 
             return $order;
         });
