@@ -37,7 +37,7 @@ class UserController extends Controller
         $admins = $admins->latest()->get();
 
         // Customers live in `customers`
-        $customers = Customer::query();
+        $customers = Customer::query()->withMax('orders', 'order_date');
         if ($q) {
             $customers->where(function ($sub) use ($q) {
                 $sub->where('first_name', 'like', "%$q%")
@@ -76,6 +76,10 @@ class UserController extends Controller
                 'role'       => $u->is_guest ? 'guest' : 'customer',
                 'is_active'  => $u->is_active,
                 'type'       => 'customer',
+                'last_order_date' => $u->orders_max_order_date,
+                'inactive_days' => (int) \Carbon\Carbon::parse(
+                    $u->orders_max_order_date ?? $u->created_at
+                )->diffInDays(now()),
             ]));
 
         return view('admin.users.index', compact('users', 'role', 'q'));
@@ -117,10 +121,9 @@ class UserController extends Controller
             ->with('success', 'Staff account created.');
     }
 
-    public function edit(int $id)
+    public function edit(Request $request, int $id)
     {
-        // Try admin first, then customer
-        $admin = Admin::find($id);
+        $admin = $request->query('type') === 'customer' ? null : Admin::find($id);
         if ($admin) {
             return view('admin.users.edit', ['user' => $admin, 'type' => 'admin']);
         }
@@ -217,6 +220,20 @@ class UserController extends Controller
         return redirect()
             ->route('admin.users.index')
             ->with('success', 'Customer updated.');
+    }
+
+    public function updateCustomerStatus(Request $request, int $id)
+    {
+        $data = $request->validate([
+            'is_active' => ['required', 'in:0,1'],
+        ]);
+
+        $customer = Customer::where('is_guest', false)->findOrFail($id);
+        $customer->update(['is_active' => (bool) $data['is_active']]);
+
+        return redirect()
+            ->route('admin.users.index', ['role' => 'customer'])
+            ->with('success', 'Customer account '.($customer->is_active ? 'activated' : 'deactivated').'.');
     }
 
     public function destroy(int $id)

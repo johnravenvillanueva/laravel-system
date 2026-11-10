@@ -21,7 +21,7 @@
       @include('partials.flash')
       @yield('content')
     </div>
-    <a href="{{ route('home') }}" class="auth-back">@include('partials.icon', ['ico' => 'arrow-right']) Back to home</a>
+    <a href="{{ route('home') }}" class="back-link back-link--dark auth-back">@include('partials.icon', ['ico' => 'arrow-left'])<span>Back to home</span></a>
   </main>
   @stack('scripts')
 </body>

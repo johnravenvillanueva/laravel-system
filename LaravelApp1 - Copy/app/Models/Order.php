@@ -79,7 +79,7 @@ class Order extends Model
 
     public function isCancellable(): bool
     {
-        return in_array($this->status, ['pending', 'confirmed']);
+        return $this->status === 'pending';
     }
 
     public function isComplete(): bool

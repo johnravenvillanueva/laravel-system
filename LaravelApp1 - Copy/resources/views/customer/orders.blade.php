@@ -16,6 +16,12 @@
           <div class="bold mt-8" style="color:var(--brand)">₱{{ number_format($order->total_amount,2) }}</div>
         </div>
         <a href="{{ route('customer.orders.show', $order->id) }}" class="btn btn-outline btn-sm">View Details</a>
+        @if($order->isCancellable())
+          <form method="POST" action="{{ route('customer.orders.cancel', $order->id) }}" data-confirm="Cancel this order? This cannot be undone.">
+            @csrf
+            <button type="submit" class="btn btn-danger btn-sm">Cancel order</button>
+          </form>
+        @endif
       </div>
     </div>
   @empty

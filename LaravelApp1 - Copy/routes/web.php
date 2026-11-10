@@ -55,6 +55,7 @@ Route::middleware('customer.only')->prefix('customer')->name('customer.')->group
     Route::post('/checkout', [CustomerOrderController::class, 'placeOrder'])->name('checkout.store');
     Route::get('/orders', [CustomerOrderController::class, 'index'])->name('orders');
     Route::get('/orders/{id}', [CustomerOrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{id}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
     Route::get('/notifications', [CustomerOrderController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/read-all', [CustomerOrderController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
     Route::get('/profile', [CustomerOrderController::class, 'profile'])->name('profile');
@@ -73,6 +74,7 @@ Route::middleware('admin.only')->prefix('admin')->name('admin.')->group(function
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::put('/users/customers/{id}/status', [UserController::class, 'updateCustomerStatus'])->name('users.customers.status');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // Products

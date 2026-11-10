@@ -38,7 +38,7 @@ class LandingController extends Controller
         $about = [
             'address' => 'Pinaod, San Ildefonso, Bulacan',
             'phone'   => '0912 345 6789',
-            'hours'   => 'Open Daily · 7:00 AM – 9:00 PM',
+            'hours'   => 'Open Daily · 7:00 AM – 6:00 PM',
             'story'   => 'Issang Macchiatos started as a small neighborhood cart and grew into a cozy café. We roast in small batches and bake fresh every morning.',
         ];
 

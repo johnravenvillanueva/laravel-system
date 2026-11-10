@@ -6,6 +6,7 @@
     <div class="card-body">
       <form method="POST" action="{{ route('admin.users.update',$user->id) }}">
         @csrf @method('PUT')
+        <input type="hidden" name="type" value="{{ $type ?? 'admin' }}">
         <div class="row">
           <div class="form-group" style="flex:1"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-control" value="{{ $user->first_name }}" required></div>
           <div class="form-group" style="flex:1"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-control" value="{{ $user->last_name }}" required></div>

@@ -2,7 +2,7 @@
 @section('title','Sale Details')
 @section('page-title','Sale Details')
 @section('content')
-  <a href="{{ route('admin.sales.index') }}" class="text-sm" style="color:var(--brand)">← Back to sales</a>
+  <a href="{{ route('admin.sales.index') }}" class="back-link">@include('partials.icon', ['ico' => 'arrow-left'])<span>Back to sales</span></a>
   <h2 class="text-xl bold mt-16 mb-16">Sale #{{ str_pad($sale->id,5,'0',STR_PAD_LEFT) }}</h2>
 
   <div class="row" style="gap:24px;align-items:flex-start">

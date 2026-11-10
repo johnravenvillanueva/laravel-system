@@ -4,7 +4,7 @@
 @section('content')
   <div class="flex between mb-16">
     <div class="text-sm text-muted">Audited stock movements, including manual counts and sales usage.</div>
-    <a href="{{ route('admin.inventory.index') }}" class="btn btn-outline">Back to inventory</a>
+    <a href="{{ route('admin.inventory.index') }}" class="back-link">@include('partials.icon', ['ico' => 'arrow-left'])<span>Back to inventory</span></a>
   </div>
   <div class="table-wrap">
     <table>

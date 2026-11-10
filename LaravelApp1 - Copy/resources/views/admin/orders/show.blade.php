@@ -2,7 +2,7 @@
 @section('title','Manage Order')
 @section('page-title','Manage Order')
 @section('content')
-  <a href="{{ route('admin.orders.index') }}" class="text-sm" style="color:var(--brand)">← Back to orders</a>
+  <a href="{{ route('admin.orders.index') }}" class="back-link">@include('partials.icon', ['ico' => 'arrow-left'])<span>Back to orders</span></a>
   <div class="flex between center mt-16 mb-16">
     <h2 class="text-xl bold">Order #{{ str_pad($order->id,5,'0',STR_PAD_LEFT) }}</h2>
     <span class="badge badge-{{ $order->status }}">{{ ucfirst($order->status) }}</span>

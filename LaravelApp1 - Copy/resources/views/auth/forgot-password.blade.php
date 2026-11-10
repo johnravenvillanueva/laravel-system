@@ -12,7 +12,7 @@
     </div>
     <button class="btn btn-primary btn-block">Send Reset Link</button>
   </form>
-  <p class="text-sm text-muted mt-16" style="text-align:center">
-    <a href="{{ route('login') }}" style="color:var(--brand)">← Back to login</a>
-  </p>
+  <div class="auth-form-back">
+    <a href="{{ route('login') }}" class="back-link back-link--dark">@include('partials.icon', ['ico' => 'arrow-left'])<span>Back to login</span></a>
+  </div>
 @endsection

@@ -21,7 +21,7 @@
 
     <div class="flex gap-12 confirm-actions">
       <a href="{{ route('menu') }}" class="btn btn-primary">Order Again</a>
-      <a href="{{ route('home') }}" class="btn btn-outline">Back to Home</a>
+      <a href="{{ route('home') }}" class="back-link">@include('partials.icon', ['ico' => 'arrow-left'])<span>Back to home</span></a>
     </div>
 
     <p class="text-sm text-muted confirm-tip">

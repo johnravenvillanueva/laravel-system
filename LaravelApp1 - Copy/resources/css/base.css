@@ -68,6 +68,31 @@ ul { list-style: none; }
 
 .icon { width: 18px; height: 18px; flex-shrink: 0; }
 .btn .icon { width: 16px; height: 16px; }
+.back-link {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 42px; padding: 6px 16px 6px 7px;
+  border: 1px solid rgba(107, 62, 38, .16); border-radius: 999px;
+  background: linear-gradient(135deg, #fff 0%, #fffaf0 100%); color: var(--ink);
+  box-shadow: 0 3px 10px rgba(36, 24, 15, .07);
+  font-size: .88rem; font-weight: 700; line-height: 1.2;
+  transition: transform .18s var(--ease), box-shadow .18s, border-color .18s, background-color .18s;
+}
+.back-link > .icon {
+  width: 28px; height: 28px; padding: 6px; border-radius: 50%;
+  background: var(--ink); color: var(--accent);
+  transition: transform .18s var(--ease), background-color .18s, color .18s;
+}
+.back-link:hover {
+  transform: translateY(-2px); border-color: rgba(107, 62, 38, .35);
+  box-shadow: 0 7px 16px rgba(36, 24, 15, .13);
+}
+.back-link:hover > .icon { transform: translateX(-2px); background: var(--brand); color: #fff; }
+.back-link:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.back-link--dark {
+  border-color: rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .08);
+  color: #f7e6bb; box-shadow: 0 6px 20px rgba(0, 0, 0, .14);
+}
+.back-link--dark:hover { border-color: rgba(200, 153, 58, .55); background: rgba(255, 255, 255, .12); }
+.back-link--dark > .icon { background: rgba(200, 153, 58, .2); color: var(--accent); }
 
 /* Typography ------------------------------------------------------------- */
 h1, h2, h3, h4,

@@ -25,6 +25,13 @@ class CustomerOnly
                 ->with('error', 'Please sign in to continue.');
         }
 
+        if (! Auth::guard('customer')->user()->is_active) {
+            Auth::guard('customer')->logout();
+
+            return redirect()->route('login')
+                ->with('error', 'This account has been deactivated.');
+        }
+
         return $next($request);
     }
 }

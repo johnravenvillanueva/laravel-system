@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Support\OrderPickupCapacity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -42,6 +43,52 @@ class OrderController extends Controller
             ->findOrFail($id);
 
         return view('customer.order-show', compact('order'));
+    }
+
+    public function cancel(int $id)
+    {
+        $customer = $this->customer();
+        $cancelled = DB::transaction(function () use ($id, $customer) {
+            $order = Order::where('customer_id', $customer->customer_id)
+                ->whereKey($id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (! $order->isCancellable()) {
+                return false;
+            }
+
+            $order->update(['status' => 'cancelled']);
+
+            Notification::create([
+                'customer_id' => $customer->customer_id,
+                'order_id' => $order->order_id,
+                'title' => 'Order Cancelled',
+                'message' => 'Your order '.$order->reference_code.' was cancelled.',
+                'type' => 'order_update',
+                'is_read' => false,
+            ]);
+
+            foreach (\App\Models\Admin::where('is_active', true)->get() as $admin) {
+                Notification::create([
+                    'admin_id' => $admin->admin_id,
+                    'order_id' => $order->order_id,
+                    'title' => 'Order Cancelled by Customer',
+                    'message' => 'Order '.$order->reference_code.' was cancelled by '.$customer->fullName().'.',
+                    'type' => 'new_order',
+                    'is_read' => false,
+                ]);
+            }
+
+            return true;
+        });
+
+        if (! $cancelled) {
+            return back()->with('error', 'This order can no longer be cancelled because it is no longer pending.');
+        }
+
+        return redirect()->route('customer.orders.show', $id)
+            ->with('success', 'Your order has been cancelled.');
     }
 
     /* -------------------------------------------------
