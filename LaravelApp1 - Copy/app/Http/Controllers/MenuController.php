@@ -13,7 +13,7 @@ class MenuController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::with('category')->available();
+        $query = Product::with(['category', 'ingredients.inventoryItem'])->available();
 
         // Search by name
         if ($q = $request->query('q')) {
@@ -36,10 +36,10 @@ class MenuController extends Controller
      */
     public function show(int $id)
     {
-        $product = Product::with('category')->findOrFail($id);
+        $product = Product::with(['category', 'ingredients.inventoryItem'])->findOrFail($id);
 
         // Related products from same category (excluding current)
-        $related = Product::with('category')
+        $related = Product::with(['category', 'ingredients.inventoryItem'])
             ->available()
             ->where('category_id', $product->category_id)
             ->where('product_id', '!=', $product->product_id)

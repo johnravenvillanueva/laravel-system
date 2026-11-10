@@ -76,3 +76,15 @@
 .confirm-actions { justify-content: center; flex-wrap: wrap; margin-top: 24px; }
 .confirm-tip { margin-top: 24px; }
 .confirm-tip a { color: var(--brand-2); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.guest-sms-demo {
+  margin-top: 18px; padding: 16px; border: 1px solid rgba(200, 153, 58, .38);
+  border-radius: 16px; background: linear-gradient(145deg, #fffaf0, #fff);
+  text-align: left;
+}
+.guest-sms-demo-heading { display: flex; align-items: center; gap: 8px; color: var(--brand-2); }
+.guest-sms-demo-heading .icon { width: 18px; height: 18px; }
+.guest-sms-demo p { margin: 8px 0; color: var(--muted); font-size: .85rem; }
+.guest-sms-message { padding: 12px; border-radius: 10px; background: #fff; color: var(--ink); font-size: .88rem; line-height: 1.5; }
+.guest-sms-demo > small { display: block; margin-top: 9px; color: var(--muted); line-height: 1.45; }
+.guest-sms-admin { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+.guest-sms-admin-message { padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--border); font-size: .85rem; line-height: 1.5; }

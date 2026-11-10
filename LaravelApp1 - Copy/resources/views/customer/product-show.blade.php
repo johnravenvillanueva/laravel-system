@@ -1,6 +1,7 @@
 @extends('layouts.app')
 @section('title', $product->name)
 @section('content')
+  @php($isOrderable = $product->isOrderable())
   <div class="row" style="gap:32px;align-items:flex-start">
     <div class="card" style="flex:1;min-width:280px;overflow:hidden">
   @if($product->image_url)
@@ -16,6 +17,10 @@
       <p class="text-muted mt-8">{{ $product->description }}</p>
       <div class="text-2xl bold mt-16" style="color:var(--brand)">₱{{ number_format($product->price,2) }}</div>
 
+      @unless($isOrderable)
+        <p class="badge badge-cancelled mt-16">Out of stock</p>
+      @endunless
+
       <form method="POST" action="{{ auth('customer')->check() ? route('customer.cart.add', $product->id) : route('customer.guest.cart.add', $product->id) }}" class="mt-24">
         @csrf
         <div class="form-group">
@@ -30,7 +35,7 @@
             <button type="button" data-inc>+</button>
           </div>
         </div>
-        <button class="btn btn-primary btn-block">Add to Cart 🛒</button>
+        <button class="btn btn-primary btn-block" @disabled(!$isOrderable)>Add to Cart 🛒</button>
       </form>
     </div>
   </div>

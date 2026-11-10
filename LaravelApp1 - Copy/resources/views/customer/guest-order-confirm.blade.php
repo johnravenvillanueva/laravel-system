@@ -19,6 +19,16 @@
       </div>
     </div>
 
+    @if(!empty($order['phone']))
+      <div class="guest-sms-demo">
+        <div class="guest-sms-demo-heading">
+          @include('partials.icon', ['ico' => 'phone'])
+          <strong>Stay tuned for order updates!</strong>
+        </div>
+        <p>We’ll send updates to <strong>{{ $order['phone'] }}</strong> once SMS delivery is enabled.</p>
+      </div>
+    @endif
+
     <div class="flex gap-12 confirm-actions">
       <a href="{{ route('menu') }}" class="btn btn-primary">Order Again</a>
       <a href="{{ route('home') }}" class="back-link">@include('partials.icon', ['ico' => 'arrow-left'])<span>Back to home</span></a>

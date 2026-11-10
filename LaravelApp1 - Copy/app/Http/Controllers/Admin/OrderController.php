@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Order;
+use App\Support\GuestSmsSimulator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -36,7 +37,7 @@ class OrderController extends Controller
 
     public function show(int $id)
     {
-        $order = Order::with(['items.product', 'customer', 'sales'])
+        $order = Order::with(['items.product', 'customer', 'sales', 'guestSmsNotifications'])
             ->findOrFail($id);
 
         return view('admin.orders.show', compact('order'));
@@ -108,6 +109,8 @@ class OrderController extends Controller
                     'type' => 'order_update',
                     'is_read' => false,
                 ]);
+            } elseif ($order->guest_phone) {
+                GuestSmsSimulator::orderStatusChanged($order, $this->statusLabel($data['status']));
             }
 
             return null;

@@ -2,6 +2,12 @@
 @section('title','Checkout')
 @section('content')
   <h2 class="text-2xl bold mb-16">Checkout</h2>
+  @if($hasUnavailableItems)
+    <div class="flash flash-error mb-16">Some items in your cart are out of stock or no longer have enough ingredients. Remove them or reduce their quantities before ordering.</div>
+  @endif
+  @error('cart')
+    <div class="flash flash-error mb-16">{{ $message }}</div>
+  @enderror
 
   <form method="POST" action="{{ route('customer.checkout.store') }}">
     @csrf
@@ -46,13 +52,13 @@
         <div class="card-body">
           @foreach($cart->items as $item)
             <div class="flex between mb-16 text-sm">
-              <span>{{ $item->quantity }}× {{ $item->product->name }}</span>
+              <span>{{ $item->quantity }}× {{ $item->product->name }} @unless($item->is_orderable)<strong style="color:var(--danger)"> (Out of stock)</strong>@endunless</span>
               <span class="bold">₱{{ number_format($item->product->price * $item->quantity,2) }}</span>
             </div>
           @endforeach
           <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
           <div class="flex between mb-16"><span class="bold">Total</span><span class="bold text-lg" style="color:var(--brand)">₱{{ number_format($subtotal,2) }}</span></div>
-          <button class="btn btn-primary btn-block">Place Order</button>
+          <button class="btn btn-primary btn-block" @disabled($hasUnavailableItems)>Place Order</button>
           <p class="text-sm text-muted mt-16" style="text-align:center">Payment is made upon pickup.</p>
         </div>
       </div>

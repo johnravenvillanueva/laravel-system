@@ -36,9 +36,21 @@
     <div class="card" style="flex:1;min-width:300px">
       <div class="card-header">Customer & Pickup</div>
       <div class="card-body">
-        <div class="bold">{{ $order->customer->first_name ?? 'Guest' }} {{ $order->customer->last_name ?? '' }}</div>
-        <div class="text-sm text-muted">{{ $order->customer->email ?? '' }}</div>
-        <div class="text-sm text-muted">{{ $order->customer->phone ?? '' }}</div>
+        <div class="bold">{{ $order->customer?->first_name ?? $order->guest_name ?? 'Guest' }} {{ $order->customer?->last_name ?? '' }}</div>
+        <div class="text-sm text-muted">{{ $order->customer?->email ?? $order->guest_email ?? '' }}</div>
+        <div class="text-sm text-muted">{{ $order->customer?->phone ?? $order->guest_phone ?? '' }}</div>
+        @if($order->guestSmsNotifications->isNotEmpty())
+          <div class="guest-sms-admin">
+            <div class="bold">Guest SMS demo · {{ $order->guest_phone }}</div>
+            <div class="text-sm text-muted">Messages prepared locally; not delivered to a mobile carrier.</div>
+            @foreach($order->guestSmsNotifications as $sms)
+              <div class="guest-sms-admin-message">
+                <span class="text-sm text-muted">{{ $sms->created_at->format('M d, Y h:i A') }}</span>
+                <div>{{ $sms->message }}</div>
+              </div>
+            @endforeach
+          </div>
+        @endif
         <hr style="border:none;border-top:1px solid var(--border);margin:16px 0">
         <div class="text-sm"><strong>Pickup Date:</strong> {{ $order->pickup_date }}</div>
         <div class="text-sm mt-8"><strong>Pickup Time:</strong> {{ $order->pickup_time }}</div>

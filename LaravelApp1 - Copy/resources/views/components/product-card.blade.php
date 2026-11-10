@@ -1,3 +1,4 @@
+@php($isOrderable = $product->isOrderable())
 <div class="card product-card">
   <a href="{{ route('customer.product.show', $product->product_id) }}" class="product-media" tabindex="-1" aria-hidden="true">
     @if($product->image_url)
@@ -9,12 +10,15 @@
   <div class="product-body">
     <a href="{{ route('customer.product.show', $product->product_id) }}" class="product-name">{{ $product->name }}</a>
     <div class="text-sm text-muted">{{ Str::limit($product->description, 56) }}</div>
+    @unless($isOrderable)
+      <span class="badge badge-cancelled product-stock-badge">Out of stock</span>
+    @endunless
     <div class="flex between mt-8">
       <span class="product-price">₱{{ number_format($product->price, 2) }}</span>
       <form method="POST" action="{{ auth('customer')->check() ? route('customer.cart.add', $product->product_id) : route('customer.guest.cart.add', $product->product_id) }}">
         @csrf
         <input type="hidden" name="quantity" value="1">
-        <button class="btn btn-primary btn-sm" aria-label="Add {{ $product->name }} to cart">@include('partials.icon', ['ico' => 'plus', 'icoClass' => 'icon-sm']) Add</button>
+        <button class="btn btn-primary btn-sm" aria-label="Add {{ $product->name }} to cart" @disabled(!$isOrderable)>@include('partials.icon', ['ico' => 'plus', 'icoClass' => 'icon-sm']) Add</button>
       </form>
     </div>
   </div>

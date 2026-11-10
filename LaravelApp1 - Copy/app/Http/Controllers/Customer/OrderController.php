@@ -103,13 +103,16 @@ class OrderController extends Controller
         // Wrap in the shape the Blade expects
         $cart = (object) [
             'items' => collect($cartItems)->map(function ($item, $productId) {
+                $product = Product::with('ingredients.inventoryItem')->find($productId);
+
                 return (object) [
                     'id'                   => $productId,
                     'product'              => (object) [
                         'product_id' => $productId,
-                        'name'       => $item['name'],
+                        'name'       => $product?->name ?? $item['name'],
                         'price'      => $item['price'],
                     ],
+                    'is_orderable'         => $product && $product->isOrderable((int) $item['qty']),
                     'quantity'             => $item['qty'],
                     'special_instructions' => $item['note'] ?? '',
                     'image_url'            => $item['image_url'] ?? null,
@@ -122,11 +125,16 @@ class OrderController extends Controller
 
     public function addToCart(Request $request, int $productId)
     {
-        $product = Product::available()->findOrFail($productId);
+        $product = Product::with('ingredients.inventoryItem')->available()->findOrFail($productId);
         $qty = max(1, (int) $request->input('quantity', 1));
         $note = $request->input('special_instructions', '');
 
         $cart = $request->session()->get('customer_cart', []);
+        $requestedQuantity = $qty + ($cart[$productId]['qty'] ?? 0);
+
+        if (! $product->isOrderable($requestedQuantity)) {
+            return back()->with('error', 'There are not enough ingredients in stock for the requested quantity.');
+        }
 
         if (isset($cart[$productId])) {
             $cart[$productId]['qty'] += $qty;
@@ -154,6 +162,10 @@ class OrderController extends Controller
         $cart = $request->session()->get('customer_cart', []);
 
         if (isset($cart[$productId])) {
+            $product = Product::with('ingredients.inventoryItem')->find($productId);
+            if (! $product || ! $product->isOrderable($qty)) {
+                return back()->with('error', 'There are not enough ingredients in stock for that quantity.');
+            }
             $cart[$productId]['qty'] = $qty;
             $request->session()->put('customer_cart', $cart);
         }
@@ -177,14 +189,19 @@ class OrderController extends Controller
 
         $cart = (object) [
             'items' => collect($cartItems)->map(function ($item, $productId) {
+                $product = Product::with('ingredients.inventoryItem')->find($productId);
+
                 return (object) [
-                    'product'  => (object) ['name' => $item['name'], 'price' => $item['price']],
-                    'quantity' => $item['qty'],
-                ];
-            })->values(),
+                        'product'  => (object) ['name' => $product?->name ?? $item['name'], 'price' => $item['price']],
+                        'is_orderable' => $product && $product->isOrderable((int) $item['qty']),
+                        'quantity' => $item['qty'],
+                    ];
+                })->values(),
         ];
 
-        return view('customer.checkout', compact('cart', 'subtotal'));
+        $hasUnavailableItems = $cart->items->contains(fn ($item) => ! $item->is_orderable);
+
+        return view('customer.checkout', compact('cart', 'subtotal', 'hasUnavailableItems'));
     }
 
     public function placeOrder(Request $request)
@@ -212,6 +229,22 @@ class OrderController extends Controller
 
         $order = \DB::transaction(function () use ($data, $cartItems, $subtotal, $customer) {
             OrderPickupCapacity::ensureAvailable($data['pickup_date'], $data['pickup_time']);
+            $productIds = array_map('intval', array_keys($cartItems));
+            Product::lockInventoryForProducts($productIds);
+            $products = Product::with('ingredients.inventoryItem')
+                ->whereIn('product_id', $productIds)
+                ->get()
+                ->keyBy('product_id');
+
+            foreach ($cartItems as $productId => $item) {
+                $product = $products->get((int) $productId);
+                if (! $product || ! $product->isOrderable((int) $item['qty'])) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'cart' => ($product?->name ?? $item['name'] ?? 'A product')
+                            .' is out of stock or no longer has enough ingredients. Remove it or adjust the quantity before ordering.',
+                    ]);
+                }
+            }
 
             $order = Order::create([
                 'reference_code' => Order::generateReferenceCode(),

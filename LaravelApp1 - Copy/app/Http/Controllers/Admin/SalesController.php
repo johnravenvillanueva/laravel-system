@@ -35,7 +35,7 @@ class SalesController extends Controller
 
     public function create()
     {
-        $products = Product::with('category')->available()->orderBy('name')->get();
+        $products = Product::with(['category', 'ingredients.inventoryItem'])->available()->orderBy('name')->get();
         $customers = Customer::where('is_active', true)->orderBy('first_name')->get();
 
         return view('admin.sales.create', compact('products', 'customers'));
@@ -50,19 +50,50 @@ class SalesController extends Controller
             'notes'          => ['nullable', 'string', 'max:500'],
         ]);
 
-        // Decode POS items: [{"id":1,"qty":2,"price":145}, ...]
+        // Decode POS items: [{"id":1,"qty":2}, ...]
         $items = json_decode($data['items'], true);
 
-        if (! is_array($items) || empty($items)) {
+        if (! is_array($items) || empty($items) || ! array_is_list($items)) {
             return back()->with('error', 'Please add at least one item to the sale.');
         }
 
+        $quantities = [];
+        foreach ($items as $row) {
+            if (! is_array($row)
+                || ! isset($row['id'], $row['qty'])
+                || filter_var($row['id'], FILTER_VALIDATE_INT) === false
+                || filter_var($row['qty'], FILTER_VALIDATE_INT) === false
+                || (int) $row['qty'] < 1) {
+                return back()->with('error', 'The sale contains an invalid product or quantity.');
+            }
+
+            $productId = (int) $row['id'];
+            $quantities[$productId] = ($quantities[$productId] ?? 0) + (int) $row['qty'];
+        }
+
         $staffId = Auth::guard('admin')->id();
-        $total = collect($items)->sum(fn($i) => $i['price'] * $i['qty']);
 
-        $sale = DB::transaction(function () use ($data, $items, $total, $staffId) {
+        $sale = DB::transaction(function () use ($data, $quantities, $staffId) {
+            $productIds = array_keys($quantities);
+            Product::lockInventoryForProducts($productIds);
+            $products = Product::with('ingredients.inventoryItem')
+                ->whereIn('product_id', $productIds)
+                ->get()
+                ->keyBy('product_id');
 
-            // 1. Create the sale
+            $total = 0;
+            foreach ($quantities as $productId => $quantity) {
+                $product = $products->get($productId);
+                if (! $product || ! $product->isOrderable($quantity)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'items' => ($product?->name ?? 'A product')
+                            .' does not have enough ingredients in stock for this sale.',
+                    ]);
+                }
+
+                $total += (float) $product->price * $quantity;
+            }
+
             $sale = Sale::create([
                 'staff_id'         => $staffId,
                 'customer_id'      => $data['customer_id'] ?? null,
@@ -72,21 +103,17 @@ class SalesController extends Controller
                 'transaction_type' => 'walk-in',
             ]);
 
-                       // 2. Save each line item + deduct inventory
-            foreach ($items as $row) {
-                $product = Product::find($row['id']);
-                if (! $product) continue;
-
+            foreach ($quantities as $productId => $quantity) {
+                $product = $products->get($productId);
                 SaleItem::create([
                     'sale_id'    => $sale->sale_id,
                     'product_id' => $product->product_id,
-                    'quantity'   => $row['qty'],
-                    'unit_price' => $row['price'],
-                    'subtotal'   => $row['price'] * $row['qty'],
+                    'quantity'   => $quantity,
+                    'unit_price' => $product->price,
+                    'subtotal'   => (float) $product->price * $quantity,
                 ]);
 
-                // 👇 Call the new centralized logic from the Product model
-                $product->deductInventory($row['qty'], 'sale', $sale->sale_id, $staffId);
+                $product->deductInventory($quantity, 'sale', $sale->sale_id, $staffId);
             }
 
             return $sale;

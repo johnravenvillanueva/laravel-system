@@ -7,9 +7,11 @@ use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Support\GuestSmsSimulator;
 use App\Support\OrderPickupCapacity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class GuestOrderController extends Controller
 {
@@ -22,6 +24,11 @@ class GuestOrderController extends Controller
     public function checkout(Request $request)
     {
         $cartItems = $request->session()->get('guest_cart', []);
+        foreach ($cartItems as $productId => $item) {
+            $product = Product::with('ingredients.inventoryItem')->find($productId);
+            $cartItems[$productId]['is_orderable'] = $product
+                && $product->isOrderable((int) $item['qty']);
+        }
         $subtotal = collect($cartItems)->sum(fn($i) => $i['price'] * $i['qty']);
 
         return view('customer.guest-checkout', compact('cartItems', 'subtotal'));
@@ -32,11 +39,16 @@ class GuestOrderController extends Controller
      */
     public function addToCart(Request $request, int $productId)
     {
-        $product = Product::available()->findOrFail($productId);
+        $product = Product::with('ingredients.inventoryItem')->available()->findOrFail($productId);
         $qty = max(1, (int) $request->input('quantity', 1));
         $note = $request->input('special_instructions', '');
 
         $cart = $request->session()->get('guest_cart', []);
+        $requestedQuantity = $qty + ($cart[$productId]['qty'] ?? 0);
+
+        if (! $product->isOrderable($requestedQuantity)) {
+            return back()->with('error', 'There are not enough ingredients in stock for the requested quantity.');
+        }
 
         if (isset($cart[$productId])) {
             // Same product already in cart → increment
@@ -103,6 +115,22 @@ class GuestOrderController extends Controller
         // Wrap in a transaction — either the order + items all save, or nothing does
         $order = DB::transaction(function () use ($data, $cartItems, $subtotal) {
             OrderPickupCapacity::ensureAvailable($data['pickup_date'], $data['pickup_time']);
+            $productIds = array_map('intval', array_keys($cartItems));
+            Product::lockInventoryForProducts($productIds);
+            $products = Product::with('ingredients.inventoryItem')
+                ->whereIn('product_id', $productIds)
+                ->get()
+                ->keyBy('product_id');
+
+            foreach ($cartItems as $productId => $item) {
+                $product = $products->get((int) $productId);
+                if (! $product || ! $product->isOrderable((int) $item['qty'])) {
+                    throw ValidationException::withMessages([
+                        'cart' => ($product?->name ?? $item['name'] ?? 'A product')
+                            .' is out of stock or no longer has enough ingredients. Remove it or adjust the quantity before ordering.',
+                    ]);
+                }
+            }
 
             $order = Order::create([
                 'reference_code' => Order::generateReferenceCode(),
@@ -131,6 +159,8 @@ class GuestOrderController extends Controller
                 ]);
             }
 
+            GuestSmsSimulator::orderPlaced($order);
+
             // One notification per admin/staff account (once per order, not per item)
             foreach (Admin::pluck('admin_id') as $adminId) {
                 Notification::create([
@@ -153,6 +183,8 @@ class GuestOrderController extends Controller
             'pickup'  => $order->pickup_date->format('M d, Y') . ' · ' . $order->pickup_time,
             'payment' => ucfirst($order->payment_method),
             'total'   => number_format((float) $order->total_amount, 2),
+            'phone'   => $order->guest_phone,
+            'sms'     => $order->guestSmsNotifications()->latest()->value('message'),
         ]);
 
         // Clear guest cart

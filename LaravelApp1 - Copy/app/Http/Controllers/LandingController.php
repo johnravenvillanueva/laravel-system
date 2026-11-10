@@ -11,14 +11,14 @@ class LandingController extends Controller
     public function index()
     {
         // Featured drinks — first 4 available coffee products
-        $featured = Product::with('category')
+        $featured = Product::with(['category', 'ingredients.inventoryItem'])
             ->available()
             ->whereHas('category', fn($q) => $q->where('name', 'Coffee'))
             ->take(4)
             ->get();
 
         // Pastries — all available pastry products
-        $pastries = Product::with('category')
+        $pastries = Product::with(['category', 'ingredients.inventoryItem'])
             ->available()
             ->whereHas('category', fn($q) => $q->where('name', 'Pastry'))
             ->take(4)

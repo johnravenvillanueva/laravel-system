@@ -23,6 +23,9 @@
 @endif
               <div style="flex:1">
                 <div class="bold">{{ $item->product->name }}</div>
+                @unless($item->is_orderable)
+                  <div class="text-sm" style="color:var(--danger);font-weight:700">Out of stock — remove this item or reduce its quantity.</div>
+                @endunless
                 <div class="text-sm text-muted">{{ $item->special_instructions }}</div>
                 <div class="text-sm" style="color:var(--brand);font-weight:700">₱{{ number_format($item->product->price,2) }}</div>
               </div>
@@ -48,7 +51,10 @@
         <div class="card-body">
           <div class="flex between mb-16"><span>Subtotal</span><span class="bold">₱{{ number_format($subtotal,2) }}</span></div>
           <div class="flex between mb-16"><span>Total</span><span class="bold text-lg" style="color:var(--brand)">₱{{ number_format($subtotal,2) }}</span></div>
-          <a href="{{ route('customer.checkout') }}" class="btn btn-primary btn-block">Proceed to Checkout →</a>
+          @if($cart->items->contains(fn ($item) => ! $item->is_orderable))
+            <p class="text-sm mb-16" style="color:var(--danger)">Some items don't have enough ingredients in stock.</p>
+          @endif
+          <a href="{{ route('customer.checkout') }}" class="btn btn-primary btn-block" @if($cart->items->contains(fn ($item) => ! $item->is_orderable)) aria-disabled="true" tabindex="-1" style="pointer-events:none;opacity:.55" @endif>Proceed to Checkout →</a>
         </div>
       </div>
     </div>

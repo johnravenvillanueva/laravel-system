@@ -8,6 +8,12 @@
   </div>
 
   <h2 class="text-2xl bold mb-16">Guest Checkout</h2>
+  @error('cart')
+    <div class="flash flash-error mb-16">{{ $message }}</div>
+  @enderror
+  @if(collect($cartItems)->contains(fn ($item) => empty($item['is_orderable'])))
+    <div class="flash flash-error mb-16">Some items in your cart are out of stock or no longer have enough ingredients. Remove them before ordering.</div>
+  @endif
 
   <form method="POST" action="{{ route('customer.guest.place') }}">
     @csrf
@@ -72,7 +78,7 @@
           @if(!empty($cartItems))
             @foreach($cartItems as $pid => $item)
               <div class="flex between mb-16 text-sm">
-                <span>{{ $item['qty'] }}× {{ $item['name'] }}</span>
+                <span>{{ $item['qty'] }}× {{ $item['name'] }} @if(empty($item['is_orderable']))<strong style="color:var(--danger)">(Out of stock)</strong>@endif</span>
                 <span class="bold">₱{{ number_format($item['price'] * $item['qty'],2) }}
                   <button type="submit" form="remove-{{ $pid }}" class="icon-btn" aria-label="Remove {{ $item['name'] }}" title="Remove">✕</button>
                 </span>
@@ -87,7 +93,7 @@
             <span class="bold">Total</span>
             <span class="bold text-lg guest-summary-total">₱{{ number_format($subtotal,2) }}</span>
           </div>
-          <button class="btn btn-primary btn-block" @disabled(empty($cartItems))>Place Guest Order</button>
+          <button class="btn btn-primary btn-block" @disabled(empty($cartItems) || collect($cartItems)->contains(fn ($item) => empty($item['is_orderable'])))>Place Guest Order</button>
           <p class="text-sm text-muted guest-note">Payment is made upon pickup.</p>
         </div>
       </div>

@@ -54,6 +54,11 @@ class Order extends Model
         return $this->hasMany(Notification::class, 'order_id', 'order_id');
     }
 
+    public function guestSmsNotifications()
+    {
+        return $this->hasMany(GuestSmsNotification::class, 'order_id', 'order_id');
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');

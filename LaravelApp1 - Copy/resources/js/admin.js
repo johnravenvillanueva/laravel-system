@@ -78,6 +78,12 @@
 
     // Product cards: keyboard access + a quick "added" cue
     grid.querySelectorAll(".product-card").forEach((card) => {
+        if (card.dataset.orderable === "false") {
+            card.setAttribute("tabindex", "-1");
+            card.setAttribute("aria-label", `${card.dataset.name || "Product"} is out of stock`);
+            return;
+        }
+
         card.setAttribute("tabindex", "0");
         card.setAttribute("role", "button");
         card.setAttribute("aria-label", `Add ${card.dataset.name || "product"} to sale`);

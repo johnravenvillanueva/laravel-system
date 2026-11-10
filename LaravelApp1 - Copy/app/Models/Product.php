@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -76,6 +77,63 @@ class Product extends Model
     public function ingredients()
     {
         return $this->hasMany(ProductIngredient::class, 'product_id', 'product_id');
+    }
+
+    public function isOrderable(int $quantity = 1): bool
+    {
+        if (! $this->is_available || $quantity < 1) {
+            return false;
+        }
+
+        $this->loadMissing('ingredients.inventoryItem');
+
+        foreach ($this->ingredients as $ingredient) {
+            $inventoryItem = $ingredient->inventoryItem;
+            $perProduct = (float) $ingredient->quantity;
+
+            if (! $inventoryItem || $perProduct <= 0) {
+                return false;
+            }
+
+            $reservations = DB::table('order_items')
+                ->join('orders', 'orders.order_id', '=', 'order_items.order_id')
+                ->join('product_ingredients', 'product_ingredients.product_id', '=', 'order_items.product_id')
+                ->where('product_ingredients.inventory_id', $inventoryItem->inventory_id)
+                ->whereIn('orders.status', ['pending', 'confirmed', 'preparing', 'ready'])
+                ->select(
+                    'order_items.quantity as order_quantity',
+                    'product_ingredients.quantity as recipe_quantity'
+                )
+                ->when(DB::transactionLevel() > 0, fn ($query) => $query->lockForUpdate())
+                ->get();
+            $reserved = $reservations->sum(
+                fn ($reservation) => (float) $reservation->order_quantity * (float) $reservation->recipe_quantity
+            );
+
+            $available = (float) $inventoryItem->quantity - $reserved;
+            $required = $perProduct * $quantity;
+
+            if ($required > $available + 0.00001) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static function lockInventoryForProducts(array $productIds): void
+    {
+        $inventoryIds = DB::table('product_ingredients')
+            ->whereIn('product_id', $productIds)
+            ->orderBy('inventory_id')
+            ->pluck('inventory_id');
+
+        if ($inventoryIds->isNotEmpty()) {
+            InventoryItem::whereIn('inventory_id', $inventoryIds)
+                ->orderBy('inventory_id')
+                ->lockForUpdate()
+                ->get();
+        }
     }
 
     /**
