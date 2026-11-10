@@ -9,18 +9,24 @@
       <div class="card" style="flex:1;min-width:300px">
         <div class="card-header">Pickup Details</div>
         <div class="card-body">
-          <div class="row">
-            <div class="form-group" style="flex:1">
-              <label class="form-label">Pickup Date</label>
-              <input type="date" name="pickup_date" class="form-control" min="{{ date('Y-m-d') }}" required>
-            </div>
-            <div class="form-group" style="flex:1">
-              <label class="form-label">Pickup Time</label>
-              <input type="time" name="pickup_time" class="form-control" required>
-              @error('pickup_time') <div class="text-sm" style="color:#c0392b">{{ $message }}</div> @enderror
-            </div>
+          <div class="pickup-fields">
+            <label class="pickup-field">
+              <span class="pickup-field-heading">
+                <span class="pickup-field-icon">@include('partials.icon', ['ico' => 'calendar'])</span>
+                <span><strong>Pickup date</strong><small>Choose your day</small></span>
+              </span>
+              <input type="date" name="pickup_date" class="form-control pickup-control" min="{{ date('Y-m-d') }}" value="{{ old('pickup_date') }}" required>
+            </label>
+            <label class="pickup-field">
+              <span class="pickup-field-heading">
+                <span class="pickup-field-icon">@include('partials.icon', ['ico' => 'clock'])</span>
+                <span><strong>Pickup time</strong><small>Choose a time</small></span>
+              </span>
+              <input type="time" name="pickup_time" class="form-control pickup-control" value="{{ old('pickup_time') }}" required>
+              @error('pickup_time') <span class="pickup-error">{{ $message }}</span> @enderror
+            </label>
           </div>
-          <p class="text-sm text-muted">Each pickup date and time can have up to 5 orders.</p>
+          <p class="pickup-hint">Each pickup slot allows up to 5 orders.</p>
           <div class="form-group">
             <label class="form-label">Payment Method</label>
             <select name="payment_method" class="form-control" required>

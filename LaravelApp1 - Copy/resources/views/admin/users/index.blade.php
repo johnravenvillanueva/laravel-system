@@ -49,7 +49,7 @@
                   </button>
                 </form>
               @endif
-              <form method="POST" action="{{ route('admin.users.destroy',$u->id) }}" data-confirm="Delete this user?">
+              <form method="POST" action="{{ route('admin.users.destroy', ['type' => $u->type === 'admin' ? 'admins' : 'customers', 'id' => $u->id]) }}" data-confirm="Delete this user?">
                 @csrf @method('DELETE')
                 <button class="btn btn-danger btn-sm">Delete</button>
               </form>

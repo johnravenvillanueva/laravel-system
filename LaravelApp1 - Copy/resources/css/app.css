@@ -23,13 +23,50 @@
 /* Guest checkout -------------------------------------------------------- */
 .guest-layout { gap: 24px; align-items: flex-start; }
 .guest-col { flex: 1; min-width: 300px; }
+.pickup-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 12px; }
+.pickup-field {
+  display: grid; gap: 14px; min-width: 0; padding: 16px;
+  border: 1px solid var(--border); border-radius: 18px;
+  background: linear-gradient(145deg, #fff 0%, #fbf7ef 100%);
+  box-shadow: 0 8px 22px rgba(36, 24, 15, .055);
+  transition: border-color .2s, box-shadow .2s, transform .2s var(--ease);
+}
+.pickup-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(200, 153, 58, .16), 0 10px 24px rgba(36, 24, 15, .08);
+  transform: translateY(-2px);
+}
+.pickup-field-heading { display: flex; align-items: center; gap: 11px; }
+.pickup-field-heading > span:last-child { display: grid; gap: 2px; }
+.pickup-field-heading strong { color: var(--ink); font-size: .9rem; }
+.pickup-field-heading small { color: var(--muted); font-size: .76rem; }
+.pickup-field-icon {
+  display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center;
+  border: 1px solid rgba(200, 153, 58, .22); border-radius: 13px;
+  background: var(--accent-soft); color: var(--brand-2);
+}
+.pickup-field-icon .icon { width: 18px; height: 18px; }
+.pickup-control {
+  min-height: 48px; padding: 10px 12px; border-color: var(--border);
+  border-radius: 12px; background-color: #fff; color: var(--ink);
+  font-size: .98rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  color-scheme: light;
+}
+.pickup-control::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .78; }
+.pickup-control::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+.pickup-hint { display: flex; align-items: center; gap: 8px; margin: 0 0 22px; color: var(--muted); font-size: .8rem; }
+.pickup-hint::before { content: "i"; display: grid; width: 18px; height: 18px; place-items: center; border-radius: 50%; background: var(--accent-soft); color: var(--brand-2); font-size: .72rem; font-weight: 800; }
+.pickup-error { color: var(--danger); font-size: .78rem; line-height: 1.4; }
 .guest-summary { width: 340px; position: sticky; top: 88px; }
 .guest-summary hr { margin: 14px 0; }
 .guest-summary-total { color: var(--brand); font-family: var(--font-display); }
 .guest-note { text-align: center; margin-top: 16px; }
 .guest-footer { text-align: center; margin-top: 32px; }
 .guest-footer .btn { margin-top: 10px; }
-@media (max-width: 760px) { .guest-summary { position: static; width: 100%; } }
+@media (max-width: 760px) {
+  .guest-summary { position: static; width: 100%; }
+  .pickup-fields { grid-template-columns: 1fr; }
+}
 
 /* Order confirmation ---------------------------------------------------- */
 .confirm-wrap { max-width: 560px; margin: 40px auto; text-align: center; padding: 48px 28px; }

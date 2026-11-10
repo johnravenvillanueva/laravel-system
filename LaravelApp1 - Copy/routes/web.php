@@ -58,6 +58,7 @@ Route::middleware('customer.only')->prefix('customer')->name('customer.')->group
     Route::post('/orders/{id}/cancel', [CustomerOrderController::class, 'cancel'])->name('orders.cancel');
     Route::get('/notifications', [CustomerOrderController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/read-all', [CustomerOrderController::class, 'markAllNotificationsRead'])->name('notifications.read-all');
+    Route::post('/notifications/{id}/open', [CustomerOrderController::class, 'openNotification'])->name('notifications.open');
     Route::get('/profile', [CustomerOrderController::class, 'profile'])->name('profile');
     Route::put('/profile', [CustomerOrderController::class, 'updateProfile'])->name('profile.update');
     Route::put('/profile/password', [CustomerOrderController::class, 'changePassword'])->name('profile.password');
@@ -67,6 +68,7 @@ Route::middleware('admin.only')->prefix('admin')->name('admin.')->group(function
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
      Route::get('/notifications', [DashboardController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/read-all', [DashboardController::class, 'markNotificationsRead'])->name('notifications.read-all');
+     Route::post('/notifications/{id}/open', [DashboardController::class, 'openNotification'])->name('notifications.open');
 
     // Users — staff/admin only
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -74,8 +76,9 @@ Route::middleware('admin.only')->prefix('admin')->name('admin.')->group(function
     Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::put('/users/customers/{id}', [UserController::class, 'updateCustomer'])->name('users.customers.update');
     Route::put('/users/customers/{id}/status', [UserController::class, 'updateCustomerStatus'])->name('users.customers.status');
-    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::delete('/users/{type}/{id}', [UserController::class, 'destroy'])->whereIn('type', ['admins', 'customers'])->name('users.destroy');
 
     // Products
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');

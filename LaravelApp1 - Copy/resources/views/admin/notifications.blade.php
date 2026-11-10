@@ -14,13 +14,19 @@
     @forelse($notifications as $n)
       <div class="notif-item {{ $n->is_read ? '' : 'unread' }}">
         @if(!$n->is_read)<div class="notif-dot"></div>@endif
-        <div style="flex:1">
-          <div class="bold">{{ $n->title }}</div>
-          <div class="text-sm text-muted">{{ $n->message }}</div>
-          <div class="text-sm text-muted mt-8">{{ $n->created_at->diffForHumans() }}</div>
-        </div>
+        <form method="POST" action="{{ route('admin.notifications.open', $n->notification_id) }}" class="notif-open-form">
+          @csrf
+          <button type="submit" class="notif-content notif-content-button">
+            <span class="bold">{{ $n->title }}</span>
+            <span class="text-sm text-muted">{{ $n->message }}</span>
+            <span class="text-sm text-muted mt-8">{{ $n->created_at->diffForHumans() }}</span>
+          </button>
+        </form>
         @if($n->order_id)
-          <a href="{{ route('admin.orders.show', $n->order_id) }}" class="btn btn-outline btn-sm">View Order</a>
+          <form method="POST" action="{{ route('admin.notifications.open', $n->notification_id) }}">
+            @csrf
+            <button type="submit" class="btn btn-outline btn-sm">View Order</button>
+          </form>
         @endif
       </div>
     @empty

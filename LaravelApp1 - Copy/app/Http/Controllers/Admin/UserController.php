@@ -134,14 +134,7 @@ class UserController extends Controller
 
     public function update(Request $request, int $id)
     {
-        // Detect which type we're editing — trust the hidden field if present
-        $type = $request->input('type', 'admin');
-
-        if ($type === 'admin') {
-            return $this->updateAdmin($request, $id);
-        }
-
-        return $this->updateCustomer($request, $id);
+        return $this->updateAdmin($request, $id);
     }
 
     protected function updateAdmin(Request $request, int $id)
@@ -193,7 +186,7 @@ class UserController extends Controller
             ->with('success', 'User updated.');
     }
 
-    protected function updateCustomer(Request $request, int $id)
+    public function updateCustomer(Request $request, int $id)
     {
         $customer = Customer::findOrFail($id);
 
@@ -236,11 +229,10 @@ class UserController extends Controller
             ->with('success', 'Customer account '.($customer->is_active ? 'activated' : 'deactivated').'.');
     }
 
-    public function destroy(int $id)
+    public function destroy(string $type, int $id)
     {
-        // Try admin first
-        $admin = Admin::find($id);
-        if ($admin) {
+        if ($type === 'admins') {
+            $admin = Admin::findOrFail($id);
             // Can't delete yourself
             if ($admin->admin_id === Auth::guard('admin')->id()) {
                 return back()->with('error', 'You cannot delete your own account.');
@@ -262,7 +254,6 @@ class UserController extends Controller
             return back()->with('success', 'Staff account deleted.');
         }
 
-        // Otherwise it's a customer
         $customer = Customer::findOrFail($id);
 
         try {

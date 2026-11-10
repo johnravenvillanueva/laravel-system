@@ -70,4 +70,21 @@ class DashboardController extends Controller
 
         return back()->with('success', 'All notifications marked as read.');
     }
+
+    public function openNotification(int $id)
+    {
+        $notification = \App\Models\Notification::where('admin_id', auth('admin')->id())
+            ->findOrFail($id);
+        $notification->markAsRead();
+
+        if ($notification->order_id) {
+            return redirect()->route('admin.orders.show', $notification->order_id);
+        }
+
+        if ($notification->announcement_id) {
+            return redirect()->route('admin.announcements.index');
+        }
+
+        return redirect()->route('admin.notifications');
+    }
 }

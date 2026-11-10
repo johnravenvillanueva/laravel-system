@@ -282,6 +282,19 @@ class OrderController extends Controller
         return back()->with('success', 'All notifications marked as read.');
     }
 
+    public function openNotification(int $id)
+    {
+        $notification = Notification::where('customer_id', $this->customer()->customer_id)
+            ->findOrFail($id);
+        $notification->markAsRead();
+
+        if ($notification->order_id) {
+            return redirect()->route('customer.orders.show', $notification->order_id);
+        }
+
+        return redirect()->route('home');
+    }
+
 
     public function profile()
     {
